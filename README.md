@@ -1,4 +1,4 @@
-# Itheum 
+# Itheum Core
 The core itheum technology repo. Holds smart contracts, chain dev kits etc. More info coming soon...
 
 ## using lerna
