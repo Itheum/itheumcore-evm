@@ -27,6 +27,20 @@ async function main() {
   await dataDEX.deployed();
 
   console.log("DataDEX deployed to:", dataDEX.address);
+
+  const DataNFTToken = await hre.ethers.getContractFactory("ItheumDataNFT");
+  const dataNFTToken = await DataNFTToken.deploy();
+
+  await dataNFTToken.deployed();
+
+  console.log("DataNFT Token deployed to:", dataNFTToken.address);
+
+  console.log(`
+export const mydaContractAddress_Local = '${tokenMYDA.address}';
+export const ddexContractAddress_Local = '${dataDEX.address}';
+export const dNFTContractAddress_Local = '${dataNFTToken.address}';
+`)
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere

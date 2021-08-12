@@ -1,8 +1,8 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts@4.2.0/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts@4.2.0/utils/Counters.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
 
 contract ItheumDataNFT is ERC721 {
