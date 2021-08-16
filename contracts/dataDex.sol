@@ -45,13 +45,13 @@ contract ItheumDataDex {
     }
     
     // A buyer, buying access to a advertised data pack
-    function buyDataPack(string calldata dataPackId,  uint256 feeInMyda) external payable {
+    function buyDataPack(string calldata dataPackId, uint256 feeInMyda) external payable {
         // require(msg.value == 1 ether, "Amount should be equal to 1 Ether");
         
         uint256 myMyda = mydaToken.balanceOf(msg.sender);
         
         require(myMyda > 0, "You need MYDA to perform this function");
-        require(myMyda > feeInMyda, "You dont have sufficient myda to proceed");
+        require(myMyda > feeInMyda, "You dont have sufficient MYDA to proceed");
         
         uint256 allowance = mydaToken.allowance(msg.sender, address(this));
         require(allowance >= feeInMyda, "Check the token allowance");
