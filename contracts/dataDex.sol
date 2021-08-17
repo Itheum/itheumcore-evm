@@ -94,21 +94,21 @@ contract ItheumDataDex {
         return hasAccess;
     }
 
-    // // get a personal data proof (PDP)
-    // function getPersonalDataProof(address proofOwner, string calldata dataPackId) external view returns (bytes32) {
-    //     return personalDataProofs[proofOwner][dataPackId];
-    // }
+    // get a personal data proof (PDP)
+    function getPersonalDataProof(address proofOwner, string calldata dataPackId) external view returns (bytes32) {
+        return personalDataProofs[proofOwner][dataPackId];
+    }
 
-    // // remove a personal data proof (PDP)
-    // function removePersonalDataProof(string calldata dataPackId) external returns (bool) {
-    //     address callerOwnedProof = personalDataProofs[msg.sender][dataPackId];
+    // remove a personal data proof (PDP)
+    function removePersonalDataProof(string calldata dataPackId) external returns (bool) {
+        bytes32 callerOwnedProof = personalDataProofs[msg.sender][dataPackId];
 
-    //     require(bytes(callerOwnedProof).length > 0, "You do not own that personal data proof");
+        require(callerOwnedProof.length > 0, "You do not own that personal data proof");
 
-    //     delete personalDataProofs[msg.sender][dataPackId];
+        delete personalDataProofs[msg.sender][dataPackId];
 
-    //     return true;
-    // }
+        return true;
+    }
     
     function stringToBytes32(string memory source) internal pure returns (bytes32 result) {
         bytes memory tempEmptyStringTest = bytes(source);

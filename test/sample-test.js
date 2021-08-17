@@ -16,3 +16,6 @@ describe("Greeter", function () {
     expect(await greeter.greet()).to.equal("Hola, mundo!");
   });
 });
+
+// good testing tutorial and how to deploy to testnets
+// https://www.youtube.com/watch?v=9Qpi80dQsGU

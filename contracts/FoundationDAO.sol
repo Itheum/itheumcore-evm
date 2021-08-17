@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract FoundationDAO {
+contract ItheumFoundationDAO {
     
     // DAO staking is via the myda token, so we need a ref
     ERC20 public mydaToken;

@@ -9,6 +9,7 @@
     "ethereum-waffle": "^3.4.0",
     "ethers": "^5.4.4",
     "hardhat": "^2.6.0",
+    "hardhat-watcher": "^2.1.1",
     "lerna": "^4.0.0"
   },
   "dependencies": {
