@@ -2,8 +2,13 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract ItheumDataCoalitionsDAO {
+
+    // get auto incremented IDs
+    using Counters for Counters.Counter;
+    Counters.Counter private _DCIds;
     
     // staking is via the myda token, so we need a ref
     ERC20 public mydaToken;
@@ -15,8 +20,12 @@ contract ItheumDataCoalitionsDAO {
      ... @TODO: this needs to be a DAO controlled address)
      * chair: address of the user who created it
      * members: all the members of this coalition
-     * status: the enum status (e.g. recruitmentOfBoard, inOperation, seizedOperation, pausedOperation etc)
+     * status: the enum status (e.g. seizedOperation/0, inBoardRecruitment/1, inRecruitment/2, inOperation/3, pausedOperation/4 etc)
      * uri: the uri of the metadata file for details about this DC
+     * minBoardMembers: minimum board members for DC to become "inRecruitment"
+     * maxBoardMembers: maximum board members allowed
+     * minMembers: minimum numbers for DC to become "inOperation"
+     * maxMembers: maximum members allowed
      * minStakeInMyda: minimum needed to stake
      * mydaPool: stake/bonds etc go into the myda pool (@TODO, but how has controlling access to this? - will need to be DAO)
      */
@@ -28,6 +37,10 @@ contract ItheumDataCoalitionsDAO {
         address[] members;
         uint8 status;
         string uri;
+        uint8 minBoardMembers;
+        uint8 maxBoardMembers;
+        uint8 minMembers;
+        uint8 maxMembers;
         uint256 minStakeInMyda;
         uint256 minStakeBoardInMyda;
     }
@@ -44,12 +57,41 @@ contract ItheumDataCoalitionsDAO {
 
     /*
      * @TODO: a caller can create a data coaltion
-     * id: auto incremented unique id
-     * creator: address of the user who created it
-     * members: all the members of this coalition
-     * uri: the uri of the metadata file for details about this DC
+     * uri: uri of extra data file (like web2 application form and web2 id)
+     * minBoardMembers/maxBoardMembers: min and max board members
+     * minMembers/maxMembers : min and max  members
+     * minStakeInMyda: min stake in myda for member
+     * minStakeBoardInMyda: max stake in myda for board member
      */
-    function createDC(string memory uri) public returns (uint256) {}
+    function createDC(
+        string calldata uri,
+        uint8 minBoardMembers,
+        uint8 maxBoardMembers,
+        uint8 minMembers,
+        uint8 maxMembers,
+        uint256 minStakeInMyda,
+        uint256 minStakeBoardInMyda
+        ) public returns (uint256) {
+        
+        _DCIds.increment();
+        uint256 newDCId = _DCIds.current();
+
+        dataCoalitions[newDCId].id = newDCId;
+        dataCoalitions[newDCId].owner = msg.sender;
+        dataCoalitions[newDCId].chair = msg.sender;
+        // owner, also becomes a member
+        dataCoalitions[newDCId].board.push(msg.sender);
+        dataCoalitions[newDCId].status = 1;
+        dataCoalitions[newDCId].uri = uri;
+        dataCoalitions[newDCId].minBoardMembers = minBoardMembers;
+        dataCoalitions[newDCId].maxBoardMembers = maxBoardMembers;
+        dataCoalitions[newDCId].minMembers = minMembers;
+        dataCoalitions[newDCId].maxMembers = maxMembers;
+        dataCoalitions[newDCId].minStakeInMyda = minStakeInMyda;
+        dataCoalitions[newDCId].minStakeBoardInMyda = minStakeBoardInMyda;
+
+        return newDCId;
+    }
 
     /*
      * return the DC based on the ID
@@ -78,10 +120,12 @@ contract ItheumDataCoalitionsDAO {
         
             require(myMyda > 0, "You need MYDA to perform this function");
             require(myMyda > stakeInMyda, "You dont have sufficient MYDA to proceed");
+            require(tojoinDC.board.length < tojoinDC.maxBoardMembers, "This DCs board membership is already at max");
+            // @TODO - check if the board member is not already present            
 
             mydaToken.transferFrom(msg.sender, tojoinDC.owner, stakeInMyda);
 
-            // add a board member (@TODO what happens if he exists? and also we need to enfore max board member limit )
+            // add a board member
             tojoinDC.board.push(msg.sender);
 
             emit JoinDCBoardStakeEvent(tojoinDC.id, msg.sender, stakeInMyda);
@@ -110,10 +154,12 @@ contract ItheumDataCoalitionsDAO {
         
             require(myMyda > 0, "You need MYDA to perform this function");
             require(myMyda > stakeInMyda, "You dont have sufficient MYDA to proceed");
+            require(tojoinDC.board.length < tojoinDC.maxMembers, "This DCs membership is already at max");
+            // @TODO - check if the member is not already present  
 
             mydaToken.transferFrom(msg.sender, tojoinDC.owner, stakeInMyda);
 
-            // add a member (what happens if he exists? @TODO)
+            // add a member
             tojoinDC.members.push(msg.sender);
 
             emit JoinDCMemberStakeEvent(tojoinDC.id, msg.sender, stakeInMyda);

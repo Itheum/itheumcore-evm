@@ -21,6 +21,11 @@ module.exports = {
   watcher: {
     compilation: {
       tasks: ["compile"],
+    },
+    test: {
+      tasks: ["test"],
+      files: ["./test"],
+      verbose: true,
     }
   },
   solidity: "0.8.4"
