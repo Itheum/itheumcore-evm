@@ -4,6 +4,8 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+import "hardhat/console.sol";
+
 contract ItheumDataCoalitionsDAO {
 
     // get auto incremented IDs
@@ -109,12 +111,15 @@ contract ItheumDataCoalitionsDAO {
      * returns -> true (joined), false (failed)
      */
     function boardMemberJoin(uint256 DCId, uint256 stakeInMyda) public returns (bool) {
+        console.log("boardMemberJoin: DCId %s stakeInMyda %s", DCId, stakeInMyda);
+
         require(dataCoalitions[DCId].id != 0, "Data Coalition does not exist");
 
         // get the DC details
         DataCoalition storage tojoinDC = dataCoalitions[DCId];
 
-        if (tojoinDC.minStakeBoardInMyda >= stakeInMyda) { // fee is sufficient, lets proceed
+        if (stakeInMyda >= tojoinDC.minStakeBoardInMyda) { // fee is sufficient, lets proceed
+            console.log("boardMemberJoin: A");
             // add to the myda pool controlled by the owner
             uint256 myMyda = mydaToken.balanceOf(msg.sender);
         
@@ -123,15 +128,19 @@ contract ItheumDataCoalitionsDAO {
             require(tojoinDC.board.length < tojoinDC.maxBoardMembers, "This DCs board membership is already at max");
             // @TODO - check if the board member is not already present            
 
+            console.log("boardMemberJoin: B");
             mydaToken.transferFrom(msg.sender, tojoinDC.owner, stakeInMyda);
 
             // add a board member
+            console.log("boardMemberJoin: C %", tojoinDC.board.length);
             tojoinDC.board.push(msg.sender);
+            console.log("boardMemberJoin: D %", tojoinDC.board.length);
 
             emit JoinDCBoardStakeEvent(tojoinDC.id, msg.sender, stakeInMyda);
 
             return true;
         } else {
+            console.log("boardMemberJoin: Z");
             return false;
         }        
     }
@@ -142,7 +151,7 @@ contract ItheumDataCoalitionsDAO {
      * stakeInMyda: their stake
      * returns -> true (joined), false (failed)
      */
-    function memberJoinViaStake(uint256 DCId, uint256 stakeInMyda) public returns (bool) {
+    function memberJoinViaStake(uint256 DCId, uint256 stakeInMyda) public returns (bool) {                
         require(dataCoalitions[DCId].id != 0, "Data Coalition does not exist");
 
         // get the DC details

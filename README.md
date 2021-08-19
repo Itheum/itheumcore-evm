@@ -13,6 +13,7 @@ Contracts dev is via hardhat. Some useful commands:
 - `npx hardhat accounts`: Gives you your accounts
 - `npx hardhat compile`: Compiles all contracts in folder
 - `npx hardhat test`: runs unit tests or use `npx hardhat watch test` to run in test watch mode
+- `npx hardhat watch tdd` to run in TDD watch mode (updating contracts and saving will compile all and run tests)
 
 #### Adding hardhat local chain to metamask
 - basically after running the `npx hardhat node` you need to do this (https://www.youtube.com/watch?v=FTDEX3S1eqU) to add it to metamask and add local chain addresses to metamask

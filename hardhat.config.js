@@ -26,6 +26,14 @@ module.exports = {
       tasks: ["test"],
       files: ["./test"],
       verbose: true,
+    },
+    tdd: {
+      tasks: ["clean", { 
+        command: "compile", 
+        params: { quiet: true } 
+      }, { 
+        command: "test", 
+        params: { noCompile: true, files: ["./test"] } } ],
     }
   },
   solidity: "0.8.4"
