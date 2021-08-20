@@ -75,50 +75,64 @@ describe("ItheumDataCoalitionsDAO", function () {
 
     */
     const minStakeBoardInMyda = 500;
-    const newDC = await dataCoalitionsDAO.createDC('https://foo.bar/dcmeta1', 3, 5, 5, 8, 100, minStakeBoardInMyda);
+    const newDC = await dataCoalitionsDAO.createDC('https://foo.bar/dcmeta1', 3, 5, 5, 8, 100, getMydaInPrecision(minStakeBoardInMyda));
     await newDC.wait();
 
     // check length to make sure it 1 (as the founder is the 1st member) - [TS1]
     let DC = await dataCoalitionsDAO.getDCDetails(1);
     expect(DC.board.length).to.equal(1);
 
-    // todo rest of the scenarios, we need to make sure addr1 address has MYDA
-    await tokenMYDA.transfer(addr1.address, 10000000000000);
+    // to do rest of the scenarios, we need to make sure addr1 address has some MYDA (send some)
+    await tokenMYDA.transfer(addr1.address, getMydaInPrecision(1000));
 
-    // let's start the approve, spend and join DC process needed for [TS2]
-    const decimals = 18;
-    const mydaInPrecision = ethers.BigNumber.from("0x"+(minStakeBoardInMyda*10**decimals).toString(16));
-    
-    let balOwner = await tokenMYDA.balanceOf(owner.address);
-    console.log('🚀 ~ balOwner 1 ', balOwner.toString());
-    let balAddr1 = await tokenMYDA.balanceOf(addr1.address);
-    console.log('🚀 ~ balAddr1 1 ', balAddr1.toString());
+    // let balOwner = await tokenMYDA.balanceOf(owner.address);
+    // console.log('🚀 ~ balOwner 1 ', balOwner.toString());
+    // let balAddr1 = await tokenMYDA.balanceOf(addr1.address);
+    // console.log('🚀 ~ balAddr1 1 ', balAddr1.toString());
 
-    const checkA = await tokenMYDA.allowance(addr1.address, dataCoalitionsDAO.address);
-    console.log('🚀 ~ checkA', checkA.toString());
+    // // check current allowance for addr1
+    // const checkA = await tokenMYDA.allowance(addr1.address, dataCoalitionsDAO.address);
+    // console.log('🚀 ~ checkA', checkA.toString());
 
     // need to approve first the contract to spend 1st
-    const approveSpend = await tokenMYDA.connect(addr1).approve(dataCoalitionsDAO.address, mydaInPrecision);
+    const approveSpend = await tokenMYDA.connect(addr1).approve(dataCoalitionsDAO.address, getMydaInPrecision(minStakeBoardInMyda));
     await approveSpend.wait();
 
-    const checkB = await tokenMYDA.allowance(addr1.address, dataCoalitionsDAO.address);
-    console.log('🚀 ~ checkB', checkB.toString());
+    // const checkB = await tokenMYDA.allowance(addr1.address, dataCoalitionsDAO.address);
+    // console.log('🚀 ~ checkB', checkB.toString());
 
     // addr1 will join as new board member with stake payment
-    let joinDCAsMember = await dataCoalitionsDAO.connect(addr1).boardMemberJoin(1, mydaInPrecision);
-    console.log('🚀 ~ joinDCAsMember', joinDCAsMember);
+    let joinDCAsMember = await dataCoalitionsDAO.connect(addr1).boardMemberJoin(1, getMydaInPrecision(minStakeBoardInMyda));
     await joinDCAsMember.wait();
 
-    balOwner = await tokenMYDA.balanceOf(owner.address);
-    console.log('🚀 ~ balOwner 2 ', balOwner.toString());
-    balAddr1 = await tokenMYDA.balanceOf(addr1.address);
-    console.log('🚀 ~ balAddr1 2 ', balAddr1.toString());
+    // balOwner = await tokenMYDA.balanceOf(owner.address);
+    // console.log('🚀 ~ balOwner 2 ', balOwner.toString());
+    // balAddr1 = await tokenMYDA.balanceOf(addr1.address);
+    // console.log('🚀 ~ balAddr1 2 ', balAddr1.toString());
 
     // now DC1 board members should be 2 in total
     DC = await dataCoalitionsDAO.getDCDetails(1);
     expect(DC.board.length).to.equal(2);
+
+    /* @TODO write following test cases
+    - after the above is a success (i.e. addr1 joined board, owner addr got the myda and addr1 lost the myda)
+    - addr1 does not enough myda to stake (has 0 or around 100 - as min is 500 for DC1)
+    - addr1 has myda but the board members is at max
+    */
   });
 });
+
+/*
+  this util will take a readable number and conver to the decimals as per MYDA ERC20
+  ... it's needed to ensure approvals and transfers happen with correct precision
+*/
+function getMydaInPrecision(readableMyda) {
+  const decimals = 18;
+  const mydaInPrecision = ethers.BigNumber.from("0x"+(readableMyda*10**decimals).toString(16));
+
+  return mydaInPrecision;
+}
+
 
 // good testing tutorial and how to deploy to testnets
 // https://www.youtube.com/watch?v=9Qpi80dQsGU
