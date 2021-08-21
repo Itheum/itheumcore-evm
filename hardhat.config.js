@@ -31,9 +31,7 @@ module.exports = {
       tasks: ["clean", { 
         command: "compile", 
         params: { quiet: true } 
-      }, { 
-        command: "test", 
-        params: { noCompile: true, files: ["./test"] } } ],
+      }, "test" ],
     }
   },
   solidity: "0.8.4"

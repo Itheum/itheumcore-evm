@@ -118,6 +118,9 @@ contract ItheumDataCoalitionsDAO {
         // get the DC details
         DataCoalition storage tojoinDC = dataCoalitions[DCId];
 
+        // can only proceed if DC is in inBoardRecruitment/1, inRecruitment/2, inOperation/3 statuses
+        require((tojoinDC.status == 1 || tojoinDC.status == 2 || tojoinDC.status == 3), "This DC is not accepting board members");
+
         if (stakeInMyda >= tojoinDC.minStakeBoardInMyda) { // fee is sufficient, lets proceed
             // add to the myda pool controlled by the owner
             uint256 myMyda = mydaToken.balanceOf(msg.sender);
@@ -132,11 +135,15 @@ contract ItheumDataCoalitionsDAO {
             // add a board member
             tojoinDC.board.push(msg.sender);
 
+            // update the status if it's in inBoardRecruitment and we filled the quota
+            if (tojoinDC.board.length == tojoinDC.minBoardMembers) {
+                tojoinDC.status = 2;
+            }
+
             emit JoinDCBoardStakeEvent(tojoinDC.id, msg.sender, stakeInMyda);
 
             return true;
-        } else {
-            console.log("boardMemberJoin: Z");
+        } else {            
             return false;
         }        
     }
@@ -147,13 +154,16 @@ contract ItheumDataCoalitionsDAO {
      * stakeInMyda: their stake
      * returns -> true (joined), false (failed)
      */
-    function memberJoinViaStake(uint256 DCId, uint256 stakeInMyda) public returns (bool) {                
+    function memberJoinViaStake(uint256 DCId, uint256 stakeInMyda) public returns (bool) {    
         require(dataCoalitions[DCId].id != 0, "Data Coalition does not exist");
 
         // get the DC details
         DataCoalition storage tojoinDC = dataCoalitions[DCId];
 
-        if (tojoinDC.minStakeInMyda >= stakeInMyda) { // fee is sufficient, lets proceed
+        // can only proceed if DC is in inRecruitment/2, inOperation/3 statuses
+        require((tojoinDC.status == 2 || tojoinDC.status == 3), "This DC is not accepting members");
+
+        if (stakeInMyda >= tojoinDC.minStakeInMyda) { // fee is sufficient, lets proceed
             // add to the myda pool controlled by the owner
             uint256 myMyda = mydaToken.balanceOf(msg.sender);
         

@@ -114,10 +114,71 @@ describe("ItheumDataCoalitionsDAO", function () {
     DC = await dataCoalitionsDAO.getDCDetails(1);
     expect(DC.board.length).to.equal(2);
 
-    /* @TODO write following test cases
+    /* @TODO write following test cases to improve coverage for this scenario set
+    - make sure the DC is in correct status to access new board members
     - after the above is a success (i.e. addr1 joined board, owner addr got the myda and addr1 lost the myda)
     - addr1 does not enough myda to stake (has 0 or around 100 - as min is 500 for DC1)
     - addr1 has myda but the board members is at max
+    */
+  });
+
+  it("Should allow a new member to join via a stake", async function () {
+    /*
+      scenario:
+      'owner address' creates a DC (id 1) with min 2 board members - they will able be the 1st board member
+      'addr2 address' tries to stake and join as a regular member but it fails (as DC is in inBoardRecruitment state) [TS1]
+      'addr1 address' stakes and joins as boardmember, this takes the DC into inRecruitment [TS2]
+      'addr2 address' tries to stake and join as a regular member but succeeds [TS3]
+    */
+    const minStakeInMyda = 100;
+    const minStakeBoardInMyda = 100;
+    const newDC = await dataCoalitionsDAO.createDC('https://foo.bar/dcmeta1', 2, 5, 5, 8, getMydaInPrecision(minStakeInMyda), getMydaInPrecision(minStakeBoardInMyda));
+    await newDC.wait();
+
+    // DC should be in status inBoardRecruitment/1 and members should be 0
+    let DC = await dataCoalitionsDAO.getDCDetails(1);
+    expect(DC.status).to.equal(1);
+    expect(DC.members.length).to.equal(0);
+
+    // to do rest of the scenarios, we need to make sure addr1 and addr2 address has some MYDA (send some)
+    await tokenMYDA.transfer(addr1.address, getMydaInPrecision(1000));
+    await tokenMYDA.transfer(addr2.address, getMydaInPrecision(1000));
+
+    // addr1 & addr2 needs to approve the spend 1st
+    let approveSpend = await tokenMYDA.connect(addr1).approve(dataCoalitionsDAO.address, getMydaInPrecision(minStakeBoardInMyda));
+    await approveSpend.wait();
+    approveSpend = await tokenMYDA.connect(addr2).approve(dataCoalitionsDAO.address, getMydaInPrecision(minStakeInMyda));
+    await approveSpend.wait();
+
+
+    // addr2 will try to join as new member with stake but it fails [TS1]
+    await expect(
+      dataCoalitionsDAO.connect(addr2).memberJoinViaStake(1, getMydaInPrecision(minStakeInMyda))
+    ).to.be.revertedWith("This DC is not accepting members");
+
+
+    // addr1 will join as new board member with stake payment
+    let joinDCAsBoardMember = await dataCoalitionsDAO.connect(addr1).boardMemberJoin(1, getMydaInPrecision(minStakeBoardInMyda));
+    await joinDCAsBoardMember.wait();
+
+    // now DC1 status should be inRecruitment/2  [TS2]
+    DC = await dataCoalitionsDAO.getDCDetails(1);
+    expect(DC.status).to.equal(2);
+
+
+    // addr2 will successfully join as new member with stake [TS3]
+    const joinDCAsMember = await dataCoalitionsDAO.connect(addr2).memberJoinViaStake(1, getMydaInPrecision(minStakeInMyda));
+    await joinDCAsMember.wait();
+
+    // now DC1 members should be 1 in total
+    DC = await dataCoalitionsDAO.getDCDetails(1);
+    expect(DC.members.length).to.equal(1);
+
+
+    /* @TODO write following test cases to improve coverage for this scenario set
+    - 
+    - 
+    - 
     */
   });
 });
