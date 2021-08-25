@@ -65,13 +65,12 @@ describe("ItheumDataCoalitionsDAO", function () {
     expect(DC.uri).to.equal('https://foo.bar/dcmeta2');
   });
 
-  it("Should create a new DC an stake to join as a board member", async function () {
+  it("Should allow stake to join as a board member", async function () {
     /*
       scenario:
       'owner address' creates a DC (id 1) - they will able be the 1st board member [TS1]
-      'addr1 address' then stakes and becomes a member in DC1 - they are the 2nd member [TS2]
-        by doing this, minStakeBoardInMyda is moved from 'addr1 address' and send to 'owner address'
-          as 'owner address' is the 'owner' in DC1 (as he was the creator)
+      'addr1 address' then stakes and becomes a member in DC1 (do a status check too) - there are now the 2nd member [TS2]
+      after the above is a success (i.e. addr1 joined board, owner addr got the myda and addr1 lost the myda) - as 'owner address' is the 'owner' in DC1 (as he was the creator) [TS3]
 
     */
     const minStakeBoardInMyda = 500;
@@ -85,38 +84,43 @@ describe("ItheumDataCoalitionsDAO", function () {
     // to do rest of the scenarios, we need to make sure addr1 address has some MYDA (send some)
     await tokenMYDA.transfer(addr1.address, getMydaInPrecision(1000));
 
-    // let balOwner = await tokenMYDA.balanceOf(owner.address);
-    // console.log('🚀 ~ balOwner 1 ', balOwner.toString());
-    // let balAddr1 = await tokenMYDA.balanceOf(addr1.address);
-    // console.log('🚀 ~ balAddr1 1 ', balAddr1.toString());
-
-    // // check current allowance for addr1
-    // const checkA = await tokenMYDA.allowance(addr1.address, dataCoalitionsDAO.address);
-    // console.log('🚀 ~ checkA', checkA.toString());
-
     // need to approve first the contract to spend 1st
     const approveSpend = await tokenMYDA.connect(addr1).approve(dataCoalitionsDAO.address, getMydaInPrecision(minStakeBoardInMyda));
     await approveSpend.wait();
 
-    // const checkB = await tokenMYDA.allowance(addr1.address, dataCoalitionsDAO.address);
-    // console.log('🚀 ~ checkB', checkB.toString());
+    // S: [TS2]
+    // create balance snapshots for other tests
+    const balOwnerAddr_b4 = await tokenMYDA.balanceOf(owner.address);
+    const balAddr1_b4 = await tokenMYDA.balanceOf(addr1.address);
+
+    // status should be inBoardRecruitment/1
+    DC = await dataCoalitionsDAO.getDCDetails(1);
+    expect(DC.status).to.equal(1);
 
     // addr1 will join as new board member with stake payment
     let joinDCAsMember = await dataCoalitionsDAO.connect(addr1).boardMemberJoin(1, getMydaInPrecision(minStakeBoardInMyda));
     await joinDCAsMember.wait();
 
-    // balOwner = await tokenMYDA.balanceOf(owner.address);
-    // console.log('🚀 ~ balOwner 2 ', balOwner.toString());
-    // balAddr1 = await tokenMYDA.balanceOf(addr1.address);
-    // console.log('🚀 ~ balAddr1 2 ', balAddr1.toString());
-
     // now DC1 board members should be 2 in total
     DC = await dataCoalitionsDAO.getDCDetails(1);
     expect(DC.board.length).to.equal(2);
+    // E: [TS2]
+
+
+    // S: [TS3]
+    const balOwnerAddr = await tokenMYDA.balanceOf(owner.address);
+    const balAddr1 = await tokenMYDA.balanceOf(addr1.address);
+
+    // owner should have received minStakeBoardInMyda and addr1 should have lost that
+    expect((parseInt(balOwnerAddr_b4.toString()) + parseInt(getMydaInPrecision(minStakeBoardInMyda).toString())) == parseInt(balOwnerAddr.toString()))
+      .to.equal(true);
+
+    expect((parseInt(balAddr1_b4.toString()) - parseInt(getMydaInPrecision(minStakeBoardInMyda).toString())) == parseInt(balAddr1.toString()))
+      .to.equal(true);
+    // E: [TS3]
 
     /* @TODO write following test cases to improve coverage for this scenario set
-    - make sure the DC is in correct status to access new board members
-    - after the above is a success (i.e. addr1 joined board, owner addr got the myda and addr1 lost the myda)
+    - 
     - addr1 does not enough myda to stake (has 0 or around 100 - as min is 500 for DC1)
     - addr1 has myda but the board members is at max
     */
@@ -179,6 +183,14 @@ describe("ItheumDataCoalitionsDAO", function () {
     - 
     - 
     - 
+    */
+  });
+
+  it("Should update the status and counts of the DC according to min/max member rules [... pending]", async function () {
+    /* @TODO write following test cases to improve coverage for this scenario set
+    - board members joining (only allowed if in between min and max - or should error)
+    - members joining (only allowed if in between min and max - or should error)
+    - board members and members leaving should adjust status and counts
     */
   });
 });
