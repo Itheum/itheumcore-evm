@@ -45,5 +45,11 @@ module.exports = {
       gasPrice: 20000000000,
       accounts: [`0x${process.env.BSC_TESTNET_KEY}`]
     },
+    harmony_testnet: {
+      url: process.env.HARMONY_TESTNET_URL,
+      chainId: 1666700000,
+      gasPrice: 20000000000,
+      accounts: [`0x${process.env.HARMONY_TESTNET_KEY}`]
+    },
   }
 };

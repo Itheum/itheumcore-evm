@@ -27,7 +27,7 @@ Contracts dev is via hardhat. Some useful commands:
 ### Deploying into testnet
 - Compile all contracts in folde via `npx hardhat compile`
 - deploy via `npx hardhat run scripts/itheumcore-script.js --network {testnet_code}`
-- The following `{testnet_code}`s are supported: `bsc_testnet`
+- The following `{testnet_code}`s are supported: `bsc_testnet` `harmony_testnet`
 
 ### using watcher (plugin for live builds)
 - as above, but instead of `npx hardhat compile` run `npx hardhat watch compilation` - great for finding issues
