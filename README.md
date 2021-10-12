@@ -1,5 +1,7 @@
 # Itheum Core
-The core itheum technology repo. Holds smart contracts, chain dev kits etc. More info coming soon...
+The core itheum technology repo. Holds smart contracts, chain dev kits etc.
+
+![Itheum Core](https://raw.githubusercontent.com/Itheum/itheumcore/main/itheum-core-hero.png)
 
 ## Tech Tooling:
 The following tech tools are used to dev/build/compile/run/deploy.
