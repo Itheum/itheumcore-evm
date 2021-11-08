@@ -51,5 +51,11 @@ module.exports = {
       gasPrice: 20000000000,
       accounts: [`0x${process.env.HARMONY_TESTNET_KEY}`]
     },
+    platon_testnet: {
+      url: process.env.PLATON_TESTNET_URL,
+      chainId: 210309,
+      gasPrice: 20000000000,
+      accounts: [`0x${process.env.PLATON_TESTNET_KEY}`]
+    },
   }
 };
