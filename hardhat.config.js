@@ -57,5 +57,11 @@ module.exports = {
       gasPrice: 20000000000,
       accounts: [`0x${process.env.PLATON_TESTNET_KEY}`]
     },
+    parastate_testnet: {
+      url: process.env.PARASTATE_TESTNET_URL,
+      chainId: 123,
+      gasPrice: 20000000000,
+      accounts: [`0x${process.env.PARASTATE_TESTNET_KEY}`]
+    },
   }
 };
