@@ -63,5 +63,11 @@ module.exports = {
       gasPrice: 20000000000,
       accounts: [`0x${process.env.PARASTATE_TESTNET_KEY}`]
     },
+    avalanche_testnet: {
+      url: process.env.AVALANCHE_TESTNET_URL,
+      chainId: 43113,
+      gasPrice: 20000000000,
+      accounts: [`0x${process.env.AVALANCHE_TESTNET_KEY}`]
+    },
   }
 };
