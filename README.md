@@ -1,5 +1,5 @@
 # Itheum Core
-The core itheum technology repo. Holds smart contracts, chain dev kits etc.
+The core itheum technology repository; it holds smart contracts, chain dev kits, unit tests etc.
 
 ![Itheum Core](https://raw.githubusercontent.com/Itheum/itheumcore/main/itheum-core-hero.png)
 
@@ -29,7 +29,7 @@ Contracts dev is via hardhat. Some useful commands:
 ### Deploying into testnet
 - Compile all contracts in folde via `npx hardhat compile`
 - deploy via `npx hardhat run scripts/itheumcore-script.js --network {testnet_code}`
-- The following `{testnet_code}`s are supported: `bsc_testnet` `harmony_testnet` `platon_testnet`, `parastate_testnet`
+- The following `{testnet_code}`s are supported: `bsc_testnet` `harmony_testnet` `platon_testnet`, `parastate_testnet`, `avalanche_testnet`
 
 ### Local environemnt dev requirements
 - If you are `Deploying into testnet` , it needs some ENV vars. You need to create a `.env` file and add the ENV vars are used in the `hardhat.config.js` file.
@@ -44,7 +44,7 @@ Contracts dev is via hardhat. Some useful commands:
 - requires > node 12x
 
 ### Notes
-[internal] All contracts deployed using the ItheumCoreContracts account (0xf..2266)
+[internal] All testnet contracts deployed using the ItheumCoreContracts account (0xf..2266) - except for avalanche where we used Brave Account 1 (0x9..F82c)
 
 ## Known Cross-Chain Errors
 - **Parachain deployment error**
@@ -58,3 +58,7 @@ When deploying to Parastate (which is a substrate based EVM chain), the address 
 [This issue](https://stackoverflow.com/a/57313346) menions something about a temp ban based enfored on a previous tx issue. Not sure if it was related to the failed no-gas tx.
 
 Only way to fix this was to move to another fresh account with STATE ans try and worked fine.
+
+- **Avalanche deployment error**
+
+We got an error trying to deply to the Avalanche C-Chain and this was because it had a min gas price requirement of 25000000000. This setting was updated in the hardhat config and after this it was good.
