@@ -35,6 +35,13 @@ async function main() {
 
   console.log("DataNFT Token deployed to:", dataNFTToken.address);
 
+  const Claims = await hre.ethers.getContractFactory("Claims");
+  const claims = await Claims.deploy(tokenMYDA.address);
+
+  await claims.deployed();
+
+  console.log("Claims deployed to:", claims.address);
+
   console.log(`
 export const mydaContractAddress_Local = '${tokenMYDA.address}';
 export const ddexContractAddress_Local = '${dataDEX.address}';

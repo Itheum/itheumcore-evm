@@ -43,31 +43,31 @@ module.exports = {
       url: process.env.BSC_TESTNET_URL,
       chainId: 97,
       gasPrice: 20000000000,
-      accounts: [`0x${process.env.BSC_TESTNET_KEY}`]
+      accounts: process.env.BSC_TESTNET_KEY ? [`0x${process.env.BSC_TESTNET_KEY}`] : [],
     },
     harmony_testnet: {
       url: process.env.HARMONY_TESTNET_URL,
       chainId: 1666700000,
       gasPrice: 20000000000,
-      accounts: [`0x${process.env.HARMONY_TESTNET_KEY}`]
+      accounts: process.env.HARMONY_TESTNET_KEY ? [`0x${process.env.HARMONY_TESTNET_KEY}`] : [],
     },
     platon_testnet: {
       url: process.env.PLATON_TESTNET_URL,
       chainId: 210309,
       gasPrice: 20000000000,
-      accounts: [`0x${process.env.PLATON_TESTNET_KEY}`]
+      accounts: process.env.PLATON_TESTNET_KEY ? [`0x${process.env.PLATON_TESTNET_KEY}`] : [],
     },
     parastate_testnet: {
       url: process.env.PARASTATE_TESTNET_URL,
       chainId: 123,
       gasPrice: 20000000000,
-      accounts: [`0x${process.env.PARASTATE_TESTNET_KEY}`]
+      accounts: process.env.PARASTATE_TESTNET_KEY ? [`0x${process.env.PARASTATE_TESTNET_KEY}`] : [],
     },
     avalanche_testnet: {
       url: process.env.AVALANCHE_TESTNET_URL,
       chainId: 43113,
       gasPrice: 25000000000,
-      accounts: [`0x${process.env.AVALANCHE_TESTNET_KEY}`]
+      accounts: process.env.AVALANCHE_TESTNET_KEY ? [`0x${process.env.AVALANCHE_TESTNET_KEY}`] : [],
     },
   }
 };
