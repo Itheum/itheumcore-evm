@@ -42,6 +42,7 @@ Contracts dev is via hardhat. Some useful commands:
 
 ### Dev env
 - requires > node 12x
+- Prior to running the local dev commands like `npx hardhat watch test` you need local env vars. Rename the `.env-template` file to `.env` and update with your keys that will be used for deploying the contracts.
 
 ### Notes
 [internal] All testnet contracts deployed using the ItheumCoreContracts account (0xf..2266) - except for avalanche where we used Brave Account 1 (0x9..F82c)
