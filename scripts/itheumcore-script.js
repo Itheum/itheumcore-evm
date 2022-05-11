@@ -36,7 +36,9 @@ async function main() {
   console.log("DataNFT Token deployed to:", dataNFTToken.address);
 
   const Claims = await hre.ethers.getContractFactory("Claims");
-  const claims = await Claims.deploy(tokenMYDA.address);
+  const claims = await hre.upgrades.deployProxy(Claims, [tokenMYDA.address], {
+    initializer: 'initialize',
+  });
 
   await claims.deployed();
 
