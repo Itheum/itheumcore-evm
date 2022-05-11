@@ -9,7 +9,9 @@ describe("Claims", async function () {
     tokenMYDAAddress = (await tokenMYDA.deployed()).address;
 
     Claims = await ethers.getContractFactory("Claims");
-    claims = await Claims.deploy(tokenMYDAAddress);
+    claims = await upgrades.deployProxy(Claims, [tokenMYDAAddress], {
+      initializer: "initialize",
+    });
     claimsAddress = (await claims.deployed()).address;
   });
 
@@ -118,5 +120,13 @@ describe("Claims", async function () {
     await expect(claims.decreaseDeposit(addr1.address, 1, 550)).to.be.reverted;
 
     expect((await claims.deposits(addr1.address, 1)).amount).to.be.equal(500);
+  });
+
+  it("claims contract should be upgradable", async function () {
+    upgradesClaims = await upgrades.upgradeProxy(claimsAddress, Claims);
+    upgradesClaimsAddress = (await upgradesClaims.deployed()).address;
+
+    expect(upgradesClaimsAddress).to.equal(claimsAddress);
+    expect(await claims.itheumTokenMYDA()).to.be.equal(await upgradesClaims.itheumTokenMYDA());
   });
 });

@@ -1,12 +1,14 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract Claims is Ownable, Pausable, ReentrancyGuard {
+contract Claims is Initializable, OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
 
     event DepositIncreased(address indexed _address , uint8 indexed _type, uint _amount);
     event DepositDecreased(address indexed _address , uint8 indexed _type, uint _amount);
@@ -21,7 +23,10 @@ contract Claims is Ownable, Pausable, ReentrancyGuard {
     mapping(address => mapping(uint8 => Deposit)) public deposits;
     address public itheumTokenMYDA;
 
-    constructor (address _itheumTokenMydaAddress) {
+    function initialize(address _itheumTokenMydaAddress) public initializer {
+        __Ownable_init();
+        __Pausable_init();
+        __ReentrancyGuard_init();
         itheumTokenMYDA = _itheumTokenMydaAddress;
     }
 
