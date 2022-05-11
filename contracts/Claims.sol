@@ -19,10 +19,10 @@ contract Claims is Ownable, Pausable, ReentrancyGuard {
 
     uint public totalDeposits;
     mapping(address => mapping(uint8 => Deposit)) public deposits;
-    ERC20 itheumTokenMYDA;
+    address public itheumTokenMYDA;
 
     constructor (address _itheumTokenMydaAddress) {
-        itheumTokenMYDA = ERC20(_itheumTokenMydaAddress);
+        itheumTokenMYDA = _itheumTokenMydaAddress;
     }
 
     function pause() external onlyOwner {
@@ -45,7 +45,8 @@ contract Claims is Ownable, Pausable, ReentrancyGuard {
     ) external onlyOwner whenNotPaused noAddressZero(_address) returns(bool success) {
         totalDeposits += _amount;
 
-        require(itheumTokenMYDA.allowance(owner(), address(this)) >= totalDeposits, 'Allowance must be set first');
+        address itheumTokenOwner = Ownable(itheumTokenMYDA).owner();
+        require(ERC20(itheumTokenMYDA).allowance(itheumTokenOwner, address(this)) >= totalDeposits, 'Allowance must be set first');
 
         deposits[_address][_type].amount += _amount;
         deposits[_address][_type].lastDeposited = block.timestamp; // note that this can be influenced slightly by miners
@@ -79,7 +80,8 @@ contract Claims is Ownable, Pausable, ReentrancyGuard {
 
         totalDeposits -= amount;
 
-        itheumTokenMYDA.transferFrom(owner(), msg.sender, amount);
+        address itheumTokenOwner = Ownable(itheumTokenMYDA).owner();
+        ERC20(itheumTokenMYDA).transferFrom(itheumTokenOwner, msg.sender, amount);
 
         emit DepositClaimed(msg.sender, _type, amount);
 
