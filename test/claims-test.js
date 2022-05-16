@@ -122,11 +122,32 @@ describe("Claims", async function () {
     expect((await claims.deposits(addr1.address, 1)).amount).to.be.equal(500);
   });
 
-  it("claims contract should be upgradable", async function () {
+  it("claims contract should be upgradable and addresses and state (itheum token address) shouldn't change", async function () {
     upgradesClaims = await upgrades.upgradeProxy(claimsAddress, Claims);
     upgradesClaimsAddress = (await upgradesClaims.deployed()).address;
 
     expect(upgradesClaimsAddress).to.equal(claimsAddress);
     expect(await claims.itheumTokenMYDA()).to.be.equal(await upgradesClaims.itheumTokenMYDA());
+  });
+
+  it("claims contract should be upgradable and addresses and state (deposit) shouldn't change", async function () {
+    // Place a deposit
+    const approveTx = await tokenMYDA.approve(claimsAddress, 600);
+    await approveTx.wait();
+
+    expect((await claims.deposits(addr1.address, 1)).amount).to.be.equal(0);
+
+    const increaseDepositTx = await claims.increaseDeposit(addr1.address, 1, 500);
+    await increaseDepositTx.wait();
+
+    expect((await claims.deposits(addr1.address, 1)).amount).to.be.equal(500);
+
+    // Upgrade the contract (same contract but new instance)
+    upgradesClaims = await upgrades.upgradeProxy(claimsAddress, Claims);
+    upgradesClaimsAddress = (await upgradesClaims.deployed()).address;
+
+
+    // Expect deposit to still exist after upgrading
+    expect((await upgradesClaims.deposits(addr1.address, 1)).amount).to.be.equal(500);
   });
 });

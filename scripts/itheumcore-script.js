@@ -48,6 +48,7 @@ async function main() {
 export const mydaContractAddress_Local = '${tokenMYDA.address}';
 export const ddexContractAddress_Local = '${dataDEX.address}';
 export const dNFTContractAddress_Local = '${dataNFTToken.address}';
+export const claimsContractAddress_Local = '${claims.address}';
 `)
 
 }
