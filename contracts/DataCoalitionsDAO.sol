@@ -12,8 +12,8 @@ contract ItheumDataCoalitionsDAO {
     using Counters for Counters.Counter;
     Counters.Counter private _DCIds;
     
-    // staking is via the myda token, so we need a ref
-    ERC20 public mydaToken;
+    // staking is via the itheum token, so we need a ref
+    ERC20 public itheumToken;
     
     /**
      * The main struct for a DataCoalition (DC)
@@ -28,8 +28,8 @@ contract ItheumDataCoalitionsDAO {
      * maxBoardMembers: maximum board members allowed
      * minMembers: minimum numbers for DC to become "inOperation"
      * maxMembers: maximum members allowed
-     * minStakeInMyda: minimum needed to stake
-     * mydaPool: stake/bonds etc go into the myda pool (@TODO, but how has controlling access to this? - will need to be DAO)
+     * minStakeInItheum: minimum needed to stake
+     * itheumPool: stake/bonds etc go into the itheum pool (@TODO, but how has controlling access to this? - will need to be DAO)
      */
     struct DataCoalition {
         uint256 id;
@@ -43,18 +43,18 @@ contract ItheumDataCoalitionsDAO {
         uint8 maxBoardMembers;
         uint8 minMembers;
         uint8 maxMembers;
-        uint256 minStakeInMyda;
-        uint256 minStakeBoardInMyda;
+        uint256 minStakeInItheum;
+        uint256 minStakeBoardInItheum;
     }
 
     mapping (uint256 => DataCoalition) private dataCoalitions;
     mapping (address => uint256) private DCOwners;
 
-    event JoinDCBoardStakeEvent(uint256 DCId, address member, uint256 stakeInMyda);
-    event JoinDCMemberStakeEvent(uint256 DCId, address member, uint256 stakeInMyda);
+    event JoinDCBoardStakeEvent(uint256 DCId, address member, uint256 stakeInItheum);
+    event JoinDCMemberStakeEvent(uint256 DCId, address member, uint256 stakeInItheum);
 
-    constructor(ERC20 _mydaToken) {
-        mydaToken = _mydaToken;
+    constructor(ERC20 _itheumToken) {
+        itheumToken = _itheumToken;
     }
 
     /*
@@ -62,8 +62,8 @@ contract ItheumDataCoalitionsDAO {
      * uri: uri of extra data file (like web2 application form and web2 id)
      * minBoardMembers/maxBoardMembers: min and max board members
      * minMembers/maxMembers : min and max  members
-     * minStakeInMyda: min stake in myda for member
-     * minStakeBoardInMyda: max stake in myda for board member
+     * minStakeInItheum: min stake in itheum for member
+     * minStakeBoardInItheum: max stake in itheum for board member
      */
     function createDC(
         string calldata uri,
@@ -71,8 +71,8 @@ contract ItheumDataCoalitionsDAO {
         uint8 maxBoardMembers,
         uint8 minMembers,
         uint8 maxMembers,
-        uint256 minStakeInMyda,
-        uint256 minStakeBoardInMyda
+        uint256 minStakeInItheum,
+        uint256 minStakeBoardInItheum
         ) public returns (uint256) {
         
         _DCIds.increment();
@@ -89,8 +89,8 @@ contract ItheumDataCoalitionsDAO {
         dataCoalitions[newDCId].maxBoardMembers = maxBoardMembers;
         dataCoalitions[newDCId].minMembers = minMembers;
         dataCoalitions[newDCId].maxMembers = maxMembers;
-        dataCoalitions[newDCId].minStakeInMyda = minStakeInMyda;
-        dataCoalitions[newDCId].minStakeBoardInMyda = minStakeBoardInMyda;
+        dataCoalitions[newDCId].minStakeInItheum = minStakeInItheum;
+        dataCoalitions[newDCId].minStakeBoardInItheum = minStakeBoardInItheum;
 
         return newDCId;
     }
@@ -105,13 +105,13 @@ contract ItheumDataCoalitionsDAO {
     }
 
     /*
-     * id: board member joins by paying the minimum amount of MYDA
+     * id: board member joins by paying the minimum amount of Itheum
      * DCId: the DC they want to join
-     * stakeInMyda: their stake
+     * stakeInItheum: their stake
      * returns -> true (joined), false (failed)
      */
-    function boardMemberJoin(uint256 DCId, uint256 stakeInMyda) public returns (bool) {
-        // console.log("boardMemberJoin: DCId %s stakeInMyda %s", DCId, stakeInMyda);
+    function boardMemberJoin(uint256 DCId, uint256 stakeInItheum) public returns (bool) {
+        // console.log("boardMemberJoin: DCId %s stakeInItheum %s", DCId, stakeInItheum);
 
         require(dataCoalitions[DCId].id != 0, "Data Coalition does not exist");
 
@@ -121,16 +121,16 @@ contract ItheumDataCoalitionsDAO {
         // can only proceed if DC is in inBoardRecruitment/1, inRecruitment/2, inOperation/3 statuses
         require((tojoinDC.status == 1 || tojoinDC.status == 2 || tojoinDC.status == 3), "This DC is not accepting board members");
 
-        if (stakeInMyda >= tojoinDC.minStakeBoardInMyda) { // fee is sufficient, lets proceed
-            // add to the myda pool controlled by the owner
-            uint256 myMyda = mydaToken.balanceOf(msg.sender);
+        if (stakeInItheum >= tojoinDC.minStakeBoardInItheum) { // fee is sufficient, lets proceed
+            // add to the itheum pool controlled by the owner
+            uint256 myItheum = itheumToken.balanceOf(msg.sender);
         
-            require(myMyda > 0, "You need MYDA to perform this function");
-            require(myMyda > stakeInMyda, "You dont have sufficient MYDA to proceed");
+            require(myItheum > 0, "You need Itheum to perform this function");
+            require(myItheum > stakeInItheum, "You dont have sufficient Itheum to proceed");
             require(tojoinDC.board.length < tojoinDC.maxBoardMembers, "This DCs board membership is already at max");
             // @TODO - check if the board member is not already present            
 
-            mydaToken.transferFrom(msg.sender, tojoinDC.owner, stakeInMyda);
+            itheumToken.transferFrom(msg.sender, tojoinDC.owner, stakeInItheum);
 
             // add a board member
             tojoinDC.board.push(msg.sender);
@@ -140,7 +140,7 @@ contract ItheumDataCoalitionsDAO {
                 tojoinDC.status = 2;
             }
 
-            emit JoinDCBoardStakeEvent(tojoinDC.id, msg.sender, stakeInMyda);
+            emit JoinDCBoardStakeEvent(tojoinDC.id, msg.sender, stakeInItheum);
 
             return true;
         } else {            
@@ -149,12 +149,12 @@ contract ItheumDataCoalitionsDAO {
     }
 
     /*
-     * id: a new member wants to join by paying the minimum amount of MYDA
+     * id: a new member wants to join by paying the minimum amount of Itheum
      * DCId: the DC they want to join
-     * stakeInMyda: their stake
+     * stakeInItheum: their stake
      * returns -> true (joined), false (failed)
      */
-    function memberJoinViaStake(uint256 DCId, uint256 stakeInMyda) public returns (bool) {    
+    function memberJoinViaStake(uint256 DCId, uint256 stakeInItheum) public returns (bool) {    
         require(dataCoalitions[DCId].id != 0, "Data Coalition does not exist");
 
         // get the DC details
@@ -163,21 +163,21 @@ contract ItheumDataCoalitionsDAO {
         // can only proceed if DC is in inRecruitment/2, inOperation/3 statuses
         require((tojoinDC.status == 2 || tojoinDC.status == 3), "This DC is not accepting members");
 
-        if (stakeInMyda >= tojoinDC.minStakeInMyda) { // fee is sufficient, lets proceed
-            // add to the myda pool controlled by the owner
-            uint256 myMyda = mydaToken.balanceOf(msg.sender);
+        if (stakeInItheum >= tojoinDC.minStakeInItheum) { // fee is sufficient, lets proceed
+            // add to the itheum pool controlled by the owner
+            uint256 myItheum = itheumToken.balanceOf(msg.sender);
         
-            require(myMyda > 0, "You need MYDA to perform this function");
-            require(myMyda > stakeInMyda, "You dont have sufficient MYDA to proceed");
+            require(myItheum > 0, "You need Itheum to perform this function");
+            require(myItheum > stakeInItheum, "You dont have sufficient Itheum to proceed");
             require(tojoinDC.board.length < tojoinDC.maxMembers, "This DCs membership is already at max");
             // @TODO - check if the member is not already present  
 
-            mydaToken.transferFrom(msg.sender, tojoinDC.owner, stakeInMyda);
+            itheumToken.transferFrom(msg.sender, tojoinDC.owner, stakeInItheum);
 
             // add a member
             tojoinDC.members.push(msg.sender);
 
-            emit JoinDCMemberStakeEvent(tojoinDC.id, msg.sender, stakeInMyda);
+            emit JoinDCMemberStakeEvent(tojoinDC.id, msg.sender, stakeInItheum);
 
             return true;
         } else {

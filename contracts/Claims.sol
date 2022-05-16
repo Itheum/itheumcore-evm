@@ -21,13 +21,13 @@ contract Claims is Initializable, OwnableUpgradeable, PausableUpgradeable, Reent
 
     uint public totalDeposits;
     mapping(address => mapping(uint8 => Deposit)) public deposits;
-    address public itheumTokenMYDA;
+    address public itheumTokenAddress;
 
-    function initialize(address _itheumTokenMydaAddress) public initializer {
+    function initialize(address _itheumTokenAddress) public initializer {
         __Ownable_init();
         __Pausable_init();
         __ReentrancyGuard_init();
-        itheumTokenMYDA = _itheumTokenMydaAddress;
+        itheumTokenAddress = _itheumTokenAddress;
     }
 
     function pause() external onlyOwner {
@@ -50,8 +50,8 @@ contract Claims is Initializable, OwnableUpgradeable, PausableUpgradeable, Reent
     ) external onlyOwner whenNotPaused noAddressZero(_address) returns(bool success) {
         totalDeposits += _amount;
 
-        address itheumTokenOwner = Ownable(itheumTokenMYDA).owner();
-        require(ERC20(itheumTokenMYDA).allowance(itheumTokenOwner, address(this)) >= totalDeposits, 'Allowance must be set first');
+        address itheumTokenOwner = Ownable(itheumTokenAddress).owner();
+        require(ERC20(itheumTokenAddress).allowance(itheumTokenOwner, address(this)) >= totalDeposits, 'Allowance must be set first');
 
         deposits[_address][_type].amount += _amount;
         deposits[_address][_type].lastDeposited = block.timestamp; // note that this can be influenced slightly by miners
@@ -85,8 +85,8 @@ contract Claims is Initializable, OwnableUpgradeable, PausableUpgradeable, Reent
 
         totalDeposits -= amount;
 
-        address itheumTokenOwner = Ownable(itheumTokenMYDA).owner();
-        ERC20(itheumTokenMYDA).transferFrom(itheumTokenOwner, msg.sender, amount);
+        address itheumTokenOwner = Ownable(itheumTokenAddress).owner();
+        ERC20(itheumTokenAddress).transferFrom(itheumTokenOwner, msg.sender, amount);
 
         emit DepositClaimed(msg.sender, _type, amount);
 
