@@ -5,11 +5,11 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract ItheumTokenMYDA is ERC20, ERC20Burnable, Ownable {
+contract ItheumTokenMatic is ERC20, ERC20Burnable, Ownable {
     
     mapping(address => uint256) public faucetLastUsed;
     
-    constructor() ERC20("Itheum Token", "MYDA") {
+    constructor() ERC20("Itheum Token", "mITHEUM") {
         _mint(msg.sender, 1000000000 * 10 ** decimals());
     }
 

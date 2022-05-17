@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract ItheumDataDex {
     
-    ERC20 public mydaToken;
+    ERC20 public itheumToken;
     
     struct DataPack {
         address seller;
@@ -22,12 +22,12 @@ contract ItheumDataDex {
     // ... this is not an issue, as if web2 was compromised in the end we will compare the result to the dataHash for integrity of the proof
     mapping(address => mapping(string => bytes32)) private personalDataProofs;
     
-    constructor(ERC20 _mydaToken) {
-        mydaToken = _mydaToken;
+    constructor(ERC20 _itheumToken) {
+        itheumToken = _itheumToken;
     }
 
     event AdvertiseEvent(string dataPackId, address seller);
-    event PurchaseEvent(string dataPackId, address buyer, address seller, uint256 feeInMyda);
+    event PurchaseEvent(string dataPackId, address buyer, address seller, uint256 feeInItheum);
     
     // Data Owner advertising a data pack for sale
     function advertiseForSale(string calldata dataPackId, string calldata dataHashStr) external {
@@ -45,24 +45,24 @@ contract ItheumDataDex {
     }
     
     // A buyer, buying access to a advertised data pack
-    function buyDataPack(string calldata dataPackId, uint256 feeInMyda) external payable {
+    function buyDataPack(string calldata dataPackId, uint256 feeInItheum) external payable {
         // require(msg.value == 1 ether, "Amount should be equal to 1 Ether");
         
-        uint256 myMyda = mydaToken.balanceOf(msg.sender);
+        uint256 myItheum = itheumToken.balanceOf(msg.sender);
         
-        require(myMyda > 0, "You need MYDA to perform this function");
-        require(myMyda > feeInMyda, "You dont have sufficient MYDA to proceed");
+        require(myItheum > 0, "You need ITHEUM to perform this function");
+        require(myItheum > feeInItheum, "You dont have sufficient ITHEUM to proceed");
         
-        uint256 allowance = mydaToken.allowance(msg.sender, address(this));
-        require(allowance >= feeInMyda, "Check the token allowance");
+        uint256 allowance = itheumToken.allowance(msg.sender, address(this));
+        require(allowance >= feeInItheum, "Check the token allowance");
         
         DataPack memory targetPack = dataPacks[dataPackId];
         
-        mydaToken.transferFrom(msg.sender, targetPack.seller, feeInMyda);
+        itheumToken.transferFrom(msg.sender, targetPack.seller, feeInItheum);
         
         accessAllocations[dataPackId].push(msg.sender);
 
-        emit PurchaseEvent(dataPackId, msg.sender, targetPack.seller, feeInMyda);
+        emit PurchaseEvent(dataPackId, msg.sender, targetPack.seller, feeInItheum);
         
         // payable(targetPack.seller).transfer(1 ether);
     }

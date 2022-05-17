@@ -13,16 +13,15 @@ async function main() {
   // manually to make sure everything is compiled
   // await hre.run('compile');
 
-  // We get the contract to deploy
-  const MYDAToken = await hre.ethers.getContractFactory("ItheumTokenMYDA");
-  const tokenMYDA = await MYDAToken.deploy();
+  const ItheumToken = await hre.ethers.getContractFactory("ItheumToken");
+  const itheumToken = await ItheumToken.deploy();
 
-  await tokenMYDA.deployed();
+  await itheumToken.deployed();
 
-  console.log("MYDAToken deployed to:", tokenMYDA.address);
+  console.log("ItheumToken deployed to:", itheumToken.address);
 
   const DataDEX = await hre.ethers.getContractFactory("ItheumDataDex");
-  const dataDEX = await DataDEX.deploy(tokenMYDA.address);
+  const dataDEX = await DataDEX.deploy(itheumToken.address);
 
   await dataDEX.deployed();
 
@@ -35,11 +34,21 @@ async function main() {
 
   console.log("DataNFT Token deployed to:", dataNFTToken.address);
 
+  const Claims = await hre.ethers.getContractFactory("Claims");
+  const claims = await hre.upgrades.deployProxy(Claims, [itheumToken.address], {
+    initializer: 'initialize',
+  });
+
+  await claims.deployed();
+
+  console.log("Claims deployed to:", claims.address);
+
   console.log(`
-export const mydaContractAddress_Local = '${tokenMYDA.address}';
-export const ddexContractAddress_Local = '${dataDEX.address}';
-export const dNFTContractAddress_Local = '${dataNFTToken.address}';
-`)
+  export const itheumTokenContractAddress_Local = '${itheumToken.address}';
+  export const ddexContractAddress_Local = '${dataDEX.address}';
+  export const dNFTContractAddress_Local = '${dataNFTToken.address}';
+  export const claimsContractAddress_Local = '${claims.address}';
+  `)
 
 }
 
