@@ -13,7 +13,6 @@ async function main() {
   // manually to make sure everything is compiled
   // await hre.run('compile');
 
-  // We get the contract to deploy
   const ItheumToken = await hre.ethers.getContractFactory("ItheumToken");
   const itheumToken = await ItheumToken.deploy();
 
@@ -45,11 +44,11 @@ async function main() {
   console.log("Claims deployed to:", claims.address);
 
   console.log(`
-export const itheumTokenContractAddress_Local = '${itheumToken.address}';
-export const ddexContractAddress_Local = '${dataDEX.address}';
-export const dNFTContractAddress_Local = '${dataNFTToken.address}';
-export const claimsContractAddress_Local = '${claims.address}';
-`)
+  export const itheumTokenContractAddress_Local = '${itheumToken.address}';
+  export const ddexContractAddress_Local = '${dataDEX.address}';
+  export const dNFTContractAddress_Local = '${dataNFTToken.address}';
+  export const claimsContractAddress_Local = '${claims.address}';
+  `)
 
 }
 

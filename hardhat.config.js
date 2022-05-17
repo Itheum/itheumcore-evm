@@ -40,6 +40,24 @@ module.exports = {
   },
   solidity: "0.8.4",
   networks: {
+    eth_rop_testnet: {
+      url: process.env.ETH_ROP_TESTNET_URL,
+      chainId: 3,
+      gasPrice: 20000000000,
+      accounts: process.env.ETH_ROP_TESTNET_KEY ? [`0x${process.env.ETH_ROP_TESTNET_KEY}`] : [],
+    },
+    eth_rin_testnet: {
+      url: process.env.ETH_RIN_TESTNET_URL,
+      chainId: 4,
+      gasPrice: 20000000000,
+      accounts: process.env.ETH_RIN_TESTNET_KEY ? [`0x${process.env.ETH_RIN_TESTNET_KEY}`] : [],
+    },
+    pol_mum_testnet: {
+      url: process.env.POLYGON_MUM_TESTNET_URL,
+      chainId: 80001,
+      gasPrice: 20000000000,
+      accounts: process.env.POLYGON_MUM_TESTNET_KEY ? [`0x${process.env.POLYGON_MUM_TESTNET_KEY}`] : [],
+    },
     bsc_testnet: {
       url: process.env.BSC_TESTNET_URL,
       chainId: 97,

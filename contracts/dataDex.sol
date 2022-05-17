@@ -50,8 +50,8 @@ contract ItheumDataDex {
         
         uint256 myItheum = itheumToken.balanceOf(msg.sender);
         
-        require(myItheum > 0, "You need MYDA to perform this function");
-        require(myItheum > feeInItheum, "You dont have sufficient MYDA to proceed");
+        require(myItheum > 0, "You need ITHEUM to perform this function");
+        require(myItheum > feeInItheum, "You dont have sufficient ITHEUM to proceed");
         
         uint256 allowance = itheumToken.allowance(msg.sender, address(this));
         require(allowance >= feeInItheum, "Check the token allowance");
