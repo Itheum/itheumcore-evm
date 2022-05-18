@@ -25,7 +25,7 @@ contract ItheumDataNFT is ERC721 {
         string uri;
     }
     
-    mapping (uint256 => DataNFT) public dataNFTs;
+    mapping (uint256 => DataNFT) public dataNFTs; // todo implement public getter where we also check token id existence in _exists(tokenId)
     
     function createDataNFT(string memory uri, uint256 priceInItheum, uint8 royaltyInPercent) public returns (uint256) {
         require(priceInItheum > 0, "Price must be > 0");
@@ -37,6 +37,7 @@ contract ItheumDataNFT is ERC721 {
         _safeMint(msg.sender, newNFTId);
         
         dataNFTs[newNFTId] = DataNFT(newNFTId, priceInItheum, msg.sender, royaltyInPercent, true, uri);
+        approve(address(this), newNFTId);
         
         return newNFTId;
     }
@@ -80,7 +81,7 @@ contract ItheumDataNFT is ERC721 {
         itheumToken.transferFrom(msg.sender, dataNFTs[tokenId].creator, royaltyInItheum);
 
         // transfer ownership of NFT
-        transferFrom(address(this), msg.sender, tokenId);
+        ItheumDataNFT(this).transferFrom(ownerOf(tokenId), msg.sender, tokenId);
 
         // reset transferable
         setDataNFTTransferable(tokenId, false);
