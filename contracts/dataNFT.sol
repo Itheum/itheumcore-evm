@@ -31,7 +31,7 @@ contract ItheumDataNFT is ERC721 {
         return _dataNFTs[_tokenId];
     }
     
-    function createDataNFT(string memory _uri, uint256 _priceInItheum, uint8 _royaltyInPercent) public returns (uint256) {
+    function createDataNFT(string memory _uri, uint256 _priceInItheum, uint8 _royaltyInPercent) public returns (bool) {
         require(_priceInItheum > 0, "Price must be > 0");
         require(_royaltyInPercent <= 100, "Royalty must be <= 100");
 
@@ -43,7 +43,7 @@ contract ItheumDataNFT is ERC721 {
         _dataNFTs[newNFTId] = DataNFT(_priceInItheum, msg.sender, _royaltyInPercent, true, _uri);
         approve(address(this), newNFTId);
         
-        return newNFTId;
+        return true;
     }
 
     function setDataNFTPrice(uint256 _tokenId, uint256 _priceInItheum) public returns (bool) {
