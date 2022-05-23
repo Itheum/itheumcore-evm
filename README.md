@@ -29,7 +29,7 @@ Contracts dev is via hardhat. Some useful commands:
 ### Deploying into testnet
 - Compile all contracts in folde via `npx hardhat compile`
 - deploy via `npx hardhat run scripts/itheumcore-script.js --network {testnet_code}`
-- The following `{testnet_code}`s are supported: `eth_rop_testnet` (not used yet) `eth_rin_testnet` (not used yet) `pol_mum_testnet` `avalanche_testnet` `bsc_testnet` `harmony_testnet` `platon_testnet`, `parastate_testnet`
+- The following `{testnet_code}`s are supported: `eth_rop_testnet`, `eth_rin_testnet` (not used yet) `pol_mum_testnet` `avalanche_testnet` `bsc_testnet` `harmony_testnet` `platon_testnet`, `parastate_testnet`
 
 ### Local environemnt dev requirements
 - If you are `Deploying into testnet` , it needs some ENV vars. You need to create a `.env` file and add the ENV vars are used in the `hardhat.config.js` file.
