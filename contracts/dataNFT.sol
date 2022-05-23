@@ -21,6 +21,7 @@ contract ItheumDataNFT is ERC721 {
         address creator;
         uint8 royaltyInPercent;
         bool transferable;
+        bool secondaryTradeable;
         string uri;
     }
     
@@ -31,7 +32,12 @@ contract ItheumDataNFT is ERC721 {
         return _dataNFTs[_tokenId];
     }
     
-    function createDataNFT(string memory _uri, uint256 _priceInItheum, uint8 _royaltyInPercent) public returns (bool) {
+    function createDataNFT(
+        string memory _uri,
+        uint256 _priceInItheum,
+        uint8 _royaltyInPercent,
+        bool _secondaryTradeable)
+    public returns (bool) {
         require(_priceInItheum > 0, "Price must be > 0");
         require(_royaltyInPercent <= 100, "Royalty must be <= 100");
 
@@ -40,7 +46,15 @@ contract ItheumDataNFT is ERC721 {
 
         _safeMint(msg.sender, newNFTId);
         
-        _dataNFTs[newNFTId] = DataNFT(_priceInItheum, msg.sender, _royaltyInPercent, true, _uri);
+        _dataNFTs[newNFTId] = DataNFT({
+            priceInItheum: _priceInItheum,
+            creator: msg.sender,
+            royaltyInPercent: _royaltyInPercent,
+            transferable: true,
+            secondaryTradeable: _secondaryTradeable,
+            uri: _uri
+        });
+
         approve(address(this), newNFTId);
         
         return true;
@@ -67,8 +81,27 @@ contract ItheumDataNFT is ERC721 {
         return true;
     }
 
-    function buyDataNFT(uint _tokenId) public returns (bool) {
+    function setDataNFTSecondaryTradeable(uint256 _tokenId, bool _secondaryTradeable) public returns (bool) {
+        require(_dataNFTs[_tokenId].creator == msg.sender, "Only creator can set secondary tradeable");
+
+        _dataNFTs[_tokenId].secondaryTradeable = _secondaryTradeable;
+
+        return true;
+    }
+
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId) public virtual override {
+        safeTransferFrom(_from, _to, _tokenId, "");
+    }
+
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes memory _data) public virtual override {
+        require(_dataNFTs[_tokenId].secondaryTradeable, "DataNFT is not set to secondary tradeable");
+        require(_isApprovedOrOwner(_msgSender(), _tokenId), "ERC721: transfer caller is not owner nor approved");
+        _safeTransfer(_from, _to, _tokenId, _data);
+    }
+
+    function buyDataNFT(address _from, address _to, uint256 _tokenId, bytes memory _data) public returns(bool) {
         require(_exists(_tokenId), "DataNFT doesn't exist");
+        require(ownerOf(_tokenId) == _from, "'from' and 'ownerOf(tokenId)' doesn't match");
 
         require(_dataNFTs[_tokenId].transferable, "DataNFT is currently not transferable");
         require(getApproved(_tokenId) == address(this), "DataNFT contract must be approved to transfer the NFT");
@@ -77,15 +110,15 @@ contract ItheumDataNFT is ERC721 {
         uint256 royaltyInItheum = priceInItheum * _dataNFTs[_tokenId].royaltyInPercent / 100;
 
         // get and check the allowance of $ITHEUM
-        uint256 allowance = itheumToken.allowance(msg.sender, address(this));
+        uint256 allowance = itheumToken.allowance(_to, address(this));
         require(allowance >= priceInItheum + royaltyInItheum, "Allowance in ITHEUM contract is too low");
 
         // transfer $ITHEUM to owner and creator
-        itheumToken.transferFrom(msg.sender, ownerOf(_tokenId), priceInItheum);
-        itheumToken.transferFrom(msg.sender, _dataNFTs[_tokenId].creator, royaltyInItheum);
+        itheumToken.transferFrom(_to, _from, priceInItheum);
+        itheumToken.transferFrom(_to, _dataNFTs[_tokenId].creator, royaltyInItheum);
 
         // transfer ownership of NFT
-        ItheumDataNFT(this).transferFrom(ownerOf(_tokenId), msg.sender, _tokenId);
+        _safeTransfer(_from, _to, _tokenId, _data);
 
         // reset transferable
         setDataNFTTransferable(_tokenId, false);
