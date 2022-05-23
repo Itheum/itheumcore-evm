@@ -19,12 +19,13 @@ contract ItheumDataNFT is ERC721 {
     struct DataNFT {
         uint256 priceInItheum;
         address creator;
-        uint8 royaltyInPercent;
-        bool transferable;
-        bool secondaryTradeable;
+        uint8 royaltyInPercent; // 0-100
+        bool transferable; // specifies if dataNFT is tradeable at all
+        bool secondaryTradeable; // specifies if dataNFT is tradeable via 'safeTransferFrom' (no $ITHEUM token transfers then)
         string uri;
     }
-    
+
+    // tokenId -> dataNFT
     mapping (uint256 => DataNFT) private _dataNFTs;
 
     function dataNFTs(uint256 _tokenId) public view returns (DataNFT memory) {
@@ -55,6 +56,8 @@ contract ItheumDataNFT is ERC721 {
             uri: _uri
         });
 
+        // when a mint takes place, this contract must be allowed
+        // to transfer the dataNFT on the owners behalf
         approve(address(this), newNFTId);
         
         return true;
@@ -74,7 +77,8 @@ contract ItheumDataNFT is ERC721 {
 
         _dataNFTs[_tokenId].transferable = _transferable;
 
-        // in case transferable is false, reset approval by setting to address zero
+        // in case transferable is true, this contract must be allowed to transfer the dataNFT
+        // on the owners behalf; in other case reset approval by setting to address zero
         address addressToApprove = _transferable ? address(this) : address(0);
         approve(addressToApprove, _tokenId);
 
@@ -89,11 +93,13 @@ contract ItheumDataNFT is ERC721 {
         return true;
     }
 
-    function safeTransferFrom(address _from, address _to, uint256 _tokenId) public virtual override {
+    // function is overwritten in order to check for the secondary tradeable flag
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId) public override {
         safeTransferFrom(_from, _to, _tokenId, "");
     }
 
-    function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes memory _data) public virtual override {
+    // function is overwritten in order to check for the secondary tradeable flag
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes memory _data) public override {
         require(_dataNFTs[_tokenId].secondaryTradeable, "DataNFT is not set to secondary tradeable");
         require(_isApprovedOrOwner(_msgSender(), _tokenId), "ERC721: transfer caller is not owner nor approved");
         _safeTransfer(_from, _to, _tokenId, _data);
@@ -109,7 +115,7 @@ contract ItheumDataNFT is ERC721 {
         uint256 priceInItheum = _dataNFTs[_tokenId].priceInItheum;
         uint256 royaltyInItheum = priceInItheum * _dataNFTs[_tokenId].royaltyInPercent / 100;
 
-        // get and check the allowance of $ITHEUM
+        // check the allowance of $ITHEUM for this contract to spend from buyer
         uint256 allowance = itheumToken.allowance(_to, address(this));
         require(allowance >= priceInItheum + royaltyInItheum, "Allowance in ITHEUM contract is too low");
 
@@ -120,12 +126,14 @@ contract ItheumDataNFT is ERC721 {
         // transfer ownership of NFT
         _safeTransfer(_from, _to, _tokenId, _data);
 
-        // reset transferable
+        // reset transferable for new owner, otherwise another
+        // use would be able to buy immediately
         setDataNFTTransferable(_tokenId, false);
 
         return true;
     }
-    
+
+    // function is overwritten in order to pride the URI to the dataset
     function tokenURI(uint256 _tokenId) public view override returns (string memory) {
         require(_exists(_tokenId), "ERC721URIStorage: URI query for nonexistent token");
 
