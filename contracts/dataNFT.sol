@@ -12,6 +12,9 @@ contract ItheumDataNFT is ERC721 {
 
     ERC20 public itheumToken;
 
+    event DataNFTCreated(uint256 indexed _tokenId, address indexed _creator, uint8 indexed _royaltyInPercent);
+    event DataNFTTraded(uint256 indexed _tokenId, address indexed _from, address indexed _to, uint256 _priceInItheum, address _creator, uint256 _royaltyInItheum);
+
     constructor(ERC20 _itheumToken) ERC721("Itheum Data NFT", "DAFT") {
         itheumToken = _itheumToken;
     }
@@ -59,7 +62,9 @@ contract ItheumDataNFT is ERC721 {
         // when a mint takes place, this contract must be allowed
         // to transfer the dataNFT on the owners behalf
         approve(address(this), newNFTId);
-        
+
+        emit DataNFTCreated(newNFTId, msg.sender, _royaltyInPercent);
+
         return true;
     }
 
@@ -109,11 +114,13 @@ contract ItheumDataNFT is ERC721 {
         require(_exists(_tokenId), "DataNFT doesn't exist");
         require(ownerOf(_tokenId) == _from, "'from' and 'ownerOf(tokenId)' doesn't match");
 
-        require(_dataNFTs[_tokenId].transferable, "DataNFT is currently not transferable");
+        DataNFT memory dataNFT = _dataNFTs[_tokenId];
+
+        require(dataNFT.transferable, "DataNFT is currently not transferable");
         require(getApproved(_tokenId) == address(this), "DataNFT contract must be approved to transfer the NFT");
 
-        uint256 priceInItheum = _dataNFTs[_tokenId].priceInItheum;
-        uint256 royaltyInItheum = priceInItheum * _dataNFTs[_tokenId].royaltyInPercent / 100;
+        uint256 priceInItheum = dataNFT.priceInItheum;
+        uint256 royaltyInItheum = priceInItheum * dataNFT.royaltyInPercent / 100;
 
         // check the allowance of $ITHEUM for this contract to spend from buyer
         uint256 allowance = itheumToken.allowance(_to, address(this));
@@ -121,7 +128,7 @@ contract ItheumDataNFT is ERC721 {
 
         // transfer $ITHEUM to owner and creator
         itheumToken.transferFrom(_to, _from, priceInItheum);
-        itheumToken.transferFrom(_to, _dataNFTs[_tokenId].creator, royaltyInItheum);
+        itheumToken.transferFrom(_to, dataNFT.creator, royaltyInItheum);
 
         // transfer ownership of NFT
         _safeTransfer(_from, _to, _tokenId, _data);
@@ -129,6 +136,8 @@ contract ItheumDataNFT is ERC721 {
         // reset transferable for new owner, otherwise another
         // use would be able to buy immediately
         setDataNFTTransferable(_tokenId, false);
+
+        emit DataNFTTraded(_tokenId, _from, _to, priceInItheum, dataNFT.creator, royaltyInItheum);
 
         return true;
     }
