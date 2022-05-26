@@ -1,0 +1,14 @@
+[package]
+name = "claims-meta"
+version = "0.0.0"
+edition = "2018"
+publish = false
+authors = [ "you",]
+
+[dev-dependencies]
+
+[dependencies.claims]
+path = ".."
+
+[dependencies.elrond-wasm-debug]
+version = "0.31.1"
