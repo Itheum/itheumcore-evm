@@ -2,16 +2,26 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract ItheumDataDex {
-    
-    ERC20 public itheumToken;
+contract ItheumDataDex is Ownable {
+
+    event AdvertiseEvent(string indexed dataPackId, address indexed seller, uint256 priceInItheum);
+    event PurchaseEvent(string indexed dataPackId, address indexed buyer, address indexed seller, uint256 feeInItheum);
     
     struct DataPack {
         address seller;
         bytes32 dataHash;
+        uint256 priceInItheum;
     }
-    
+
+    uint8 public BUYER_FEE_IN_PERCENT = 2;
+    uint8 public SELLER_FEE_IN_PERCENT = 2;
+
+    ERC20 public itheumToken;
+
+    address public itheumTreasury;
+
     mapping(string => DataPack) public dataPacks;
     
     // list of addresses that has access to a dataPackId
@@ -26,52 +36,61 @@ contract ItheumDataDex {
         itheumToken = _itheumToken;
     }
 
-    event AdvertiseEvent(string dataPackId, address seller);
-    event PurchaseEvent(string dataPackId, address buyer, address seller, uint256 feeInItheum);
+    function setItheumTreasury(address _address) external onlyOwner returns(bool) {
+        itheumTreasury = _address;
+
+        return true;
+    }
     
     // Data Owner advertising a data pack for sale
-    function advertiseForSale(string calldata dataPackId, string calldata dataHashStr) external {
-        bytes32 dataHash = stringToBytes32(dataHashStr);
+    function advertiseForSale(string calldata _dataPackId, string calldata _dataHashStr, uint256 _priceInItheum) external {
+        require(dataPacks[_dataPackId].seller == address(0), "Data pack with this id already exists");
+        require(bytes(_dataHashStr).length > 0, "Data hash string must exist");
+        require(_priceInItheum > 0, "Price in ITHEUM must be greater than zero");
+
+        bytes32 dataHash = stringToBytes32(_dataHashStr);
         
-        dataPacks[dataPackId] = DataPack({
+        dataPacks[_dataPackId] = DataPack({
             seller: msg.sender,
-            dataHash: dataHash
+            dataHash: dataHash,
+            priceInItheum: _priceInItheum
         });
 
         // add the personal data proof for quick lookup as well
-        personalDataProofs[msg.sender][dataPackId] = dataHash;
+        personalDataProofs[msg.sender][_dataPackId] = dataHash;
 
-        emit AdvertiseEvent(dataPackId, msg.sender);
+        emit AdvertiseEvent(_dataPackId, msg.sender, _priceInItheum);
     }
     
     // A buyer, buying access to a advertised data pack
-    function buyDataPack(string calldata dataPackId, uint256 feeInItheum) external payable {
-        // require(msg.value == 1 ether, "Amount should be equal to 1 Ether");
-        
-        uint256 myItheum = itheumToken.balanceOf(msg.sender);
-        
-        require(myItheum > 0, "You need ITHEUM to perform this function");
-        require(myItheum > feeInItheum, "You dont have sufficient ITHEUM to proceed");
+    function buyDataPack(string calldata _dataPackId) external {
+        DataPack memory dataPack = dataPacks[_dataPackId];
+
+        require(dataPack.seller != address(0), "You can't buy a non-existing data pack");
+
+        uint256 itheumOfBuyer = itheumToken.balanceOf(msg.sender);
+
+        uint256 sellerFee = dataPack.priceInItheum * SELLER_FEE_IN_PERCENT / 100;
+        uint256 buyerFee = dataPack.priceInItheum * BUYER_FEE_IN_PERCENT / 100;
+
+        require(itheumOfBuyer >= dataPack.priceInItheum + buyerFee, "You dont have sufficient ITHEUM to proceed");
         
         uint256 allowance = itheumToken.allowance(msg.sender, address(this));
-        require(allowance >= feeInItheum, "Check the token allowance");
-        
-        DataPack memory targetPack = dataPacks[dataPackId];
-        
-        itheumToken.transferFrom(msg.sender, targetPack.seller, feeInItheum);
-        
-        accessAllocations[dataPackId].push(msg.sender);
+        require(allowance >= buyerFee, "Check the token allowance");
 
-        emit PurchaseEvent(dataPackId, msg.sender, targetPack.seller, feeInItheum);
-        
-        // payable(targetPack.seller).transfer(1 ether);
+        itheumToken.transferFrom(msg.sender, itheumTreasury, buyerFee + sellerFee);
+        itheumToken.transferFrom(msg.sender, dataPack.seller, dataPack.priceInItheum - sellerFee);
+
+        accessAllocations[_dataPackId].push(msg.sender);
+
+        emit PurchaseEvent(_dataPackId, msg.sender, dataPack.seller, buyerFee + sellerFee);
     }
     
     // Verifies on-chain hash with off-chain hash as part of datapack purchase or to verify PDP
-    function verifyData(string calldata dataPackId, string calldata dataHashStr) external view returns(bool) {
-        bytes32 dataHash = stringToBytes32(dataHashStr);
+    function verifyData(string calldata _dataPackId, string calldata _dataHashStr) external view returns(bool) {
+        bytes32 dataHash = stringToBytes32(_dataHashStr);
          
-        if (dataPacks[dataPackId].dataHash == dataHash) {
+        if (dataPacks[_dataPackId].dataHash == dataHash) {
             return true; 
         } else {
             return false;
@@ -79,8 +98,8 @@ contract ItheumDataDex {
     }
     
     // is an address as owner of a datapack?
-    function checkAccess(string calldata dataPackId) public view returns(bool) {
-        address[] memory matchedAllocation = accessAllocations[dataPackId];
+    function checkAccess(string calldata _dataPackId) public view returns(bool) {
+        address[] memory matchedAllocation = accessAllocations[_dataPackId];
         bool hasAccess = false;
         
         for (uint i=0; i < matchedAllocation.length; i++) {
@@ -95,29 +114,29 @@ contract ItheumDataDex {
     }
 
     // get a personal data proof (PDP)
-    function getPersonalDataProof(address proofOwner, string calldata dataPackId) external view returns (bytes32) {
-        return personalDataProofs[proofOwner][dataPackId];
+    function getPersonalDataProof(address _proofOwner, string calldata _dataPackId) external view returns (bytes32) {
+        return personalDataProofs[_proofOwner][_dataPackId];
     }
 
     // remove a personal data proof (PDP)
-    function removePersonalDataProof(string calldata dataPackId) external returns (bool) {
-        bytes32 callerOwnedProof = personalDataProofs[msg.sender][dataPackId];
+    function removePersonalDataProof(string calldata _dataPackId) external returns (bool) {
+        bytes32 callerOwnedProof = personalDataProofs[msg.sender][_dataPackId];
 
         require(callerOwnedProof.length > 0, "You do not own that personal data proof");
 
-        delete personalDataProofs[msg.sender][dataPackId];
+        delete personalDataProofs[msg.sender][_dataPackId];
 
         return true;
     }
     
-    function stringToBytes32(string memory source) internal pure returns (bytes32 result) {
-        bytes memory tempEmptyStringTest = bytes(source);
+    function stringToBytes32(string memory _source) internal pure returns (bytes32 result) {
+        bytes memory tempEmptyStringTest = bytes(_source);
         if (tempEmptyStringTest.length == 0) {
             return 0x0;
         }
     
         assembly {
-            result := mload(add(source, 32))
+            result := mload(add(_source, 32))
         }
     }
 }
