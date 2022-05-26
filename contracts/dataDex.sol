@@ -115,10 +115,6 @@ contract ItheumDataDex is Ownable {
 
     // remove a personal data proof (PDP)
     function removePersonalDataProof(string calldata _dataPackId) external returns (bool) {
-        bytes32 callerOwnedProof = personalDataProofs[msg.sender][_dataPackId];
-
-        require(callerOwnedProof.length > 0, "You do not own that personal data proof");
-
         delete personalDataProofs[msg.sender][_dataPackId];
 
         return true;

@@ -67,33 +67,110 @@ describe("DataDex", async function () {
     expect(await itheumToken.balanceOf('0xE54FfbD968f803a704e74b983bF448F2C76902a6')).to.be.equal(40);
   });
 
+  it("user (addr1) should not be able to buy an advertised data pack from another user (addr2) when he has too less ITHEUM", async function () {
+    const setItheumTreasuryAddressTx = await dataDex.setItheumTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+    await setItheumTreasuryAddressTx.wait();
+
+    const advertiseForSaleTx = await dataDex.connect(addr2).advertiseForSale('123abc', 'demoHashStr', 1000);
+    await advertiseForSaleTx.wait();
+
+    // no addr has $ITHEUM
+    expect(await itheumToken.balanceOf(addr1.address)).to.be.equal(0);
+    expect(await itheumToken.balanceOf(addr2.address)).to.be.equal(0);
+
+    // addr1 claims $ITHEUM
+    const faucetTx = await itheumToken.connect(addr1).faucet(addr1.address, 1000);
+    faucetTx.wait();
+
+    await expect(dataDex.connect(addr1).buyDataPack('123abc')).to.be.be.revertedWith("You dont have sufficient ITHEUM to proceed");
+  });
+
+  it("user (addr2) should be able remove personal data proof", async function () {
+    const setItheumTreasuryAddressTx = await dataDex.setItheumTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+    await setItheumTreasuryAddressTx.wait();
+
+    const advertiseForSaleTx = await dataDex.connect(addr2).advertiseForSale('123abc', 'demoHashStr', 1000);
+    await advertiseForSaleTx.wait();
+
+    expect(await dataDex.personalDataProofs(addr2.address, '123abc')).to.be.equal('0x64656d6f48617368537472000000000000000000000000000000000000000000');
+
+    const removePersonalDataProofTx = await dataDex.connect(addr2).removePersonalDataProof('123abc');
+    await removePersonalDataProofTx.wait();
+
+    expect(await dataDex.personalDataProofs(addr2.address, '123abc')).to.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
+  });
+
+  it("user (addr1) should not be able remove personal data proof", async function () {
+    const setItheumTreasuryAddressTx = await dataDex.setItheumTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+    await setItheumTreasuryAddressTx.wait();
+
+    const advertiseForSaleTx = await dataDex.connect(addr2).advertiseForSale('123abc', 'demoHashStr', 1000);
+    await advertiseForSaleTx.wait();
+
+    expect(await dataDex.personalDataProofs(addr2.address, '123abc')).to.be.equal('0x64656d6f48617368537472000000000000000000000000000000000000000000');
+
+    const removePersonalDataProofTx = await dataDex.connect(addr1).removePersonalDataProof('123abc');
+    await removePersonalDataProofTx.wait();
+
+    expect(await dataDex.personalDataProofs(addr2.address, '123abc')).to.be.equal('0x64656d6f48617368537472000000000000000000000000000000000000000000');
+  });
+
+  it("user (addr1) should not be able to buy an advertised data pack from another user (addr2) when to less approved for dataDex contract", async function () {
+    const setItheumTreasuryAddressTx = await dataDex.setItheumTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+    await setItheumTreasuryAddressTx.wait();
+
+    const advertiseForSaleTx = await dataDex.connect(addr2).advertiseForSale('123abc', 'demoHashStr', 1000);
+    await advertiseForSaleTx.wait();
+
+    // addr1 claims $ITHEUM
+    const faucetTx = await itheumToken.connect(addr1).faucet(addr1.address, 1020);
+    faucetTx.wait();
+
+    // addr1 approves dataDex contract to transfer funds on his behalf
+    const approveTx = await itheumToken.connect(addr1).approve(dataDexAddress, 1000);
+    await approveTx.wait();
+
+    await expect(dataDex.connect(addr1).buyDataPack('123abc')).to.be.revertedWith("Check the token allowance");
+  });
+
+  it("should verify data hash correctly", async function () {
+    const setItheumTreasuryAddressTx = await dataDex.setItheumTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+    await setItheumTreasuryAddressTx.wait();
+
+    const advertiseForSaleTx = await dataDex.connect(addr2).advertiseForSale('123abc', 'demoHashStr', 1000);
+    await advertiseForSaleTx.wait();
+
+    expect(await dataDex.verifyData('123abc', 'demoHashStr')).to.be.true;
+    expect(await dataDex.verifyData('123abc', 'otherHashStr')).to.be.false;
+  });
+
   it("should revert when not owner tries to set the ITHEUM treasury address", async function () {
-    await expect(dataDex.connect(addr1).setItheumTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6')).to.revertedWith('Ownable: caller is not the owner');
+    await expect(dataDex.connect(addr1).setItheumTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6')).to.be.revertedWith('Ownable: caller is not the owner');
   });
 
   it("should revert when data pack id already exists", async function () {
     const advertiseForSaleTx = await dataDex.advertiseForSale('123abc', 'demoHashStr', 1000);
     await advertiseForSaleTx.wait();
 
-    await expect(dataDex.advertiseForSale('123abc', 'demoHashStr', 1000)).to.revertedWith('Data pack with this id already exists');
+    await expect(dataDex.advertiseForSale('123abc', 'demoHashStr', 1000)).to.be.revertedWith('Data pack with this id already exists');
   });
 
   it("should revert when data hash string is empty", async function () {
-    await expect(dataDex.advertiseForSale('123abc', '', 1000)).to.revertedWith('Data hash string must exist');
+    await expect(dataDex.advertiseForSale('123abc', '', 1000)).to.be.revertedWith('Data hash string must exist');
   });
 
   it("should revert when price of zero ITHEUM token is set", async function () {
-    await expect(dataDex.advertiseForSale('123abc', 'demoHashStr', 0)).to.revertedWith('Price in ITHEUM must be greater than zero');
+    await expect(dataDex.advertiseForSale('123abc', 'demoHashStr', 0)).to.be.revertedWith('Price in ITHEUM must be greater than zero');
   });
 
   it("should revert when Itheum treasury isn't set", async function () {
-    await expect(dataDex.buyDataPack('123abc')).to.revertedWith('Itheum treasury address isn\'t set');
+    await expect(dataDex.buyDataPack('123abc')).to.be.revertedWith('Itheum treasury address isn\'t set');
   });
 
   it("should revert when user tries to buy a non-existing data pack", async function () {
     const setItheumTreasuryAddressTx = await dataDex.setItheumTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
     await setItheumTreasuryAddressTx.wait();
 
-    await expect(dataDex.buyDataPack('123abc')).to.revertedWith('You can\'t buy a non-existing data pack');
+    await expect(dataDex.buyDataPack('123abc')).to.be.revertedWith('You can\'t buy a non-existing data pack');
   });
 });
