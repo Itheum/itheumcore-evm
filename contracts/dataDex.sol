@@ -30,13 +30,15 @@ contract ItheumDataDex is Ownable {
     // address[dataPackId] will give you the dataHash (i.e. the proof for the progId reponse)
     // in web2, the dataPackId can link to a web2 storage of related meta (programId + program onbaording link etc)
     // ... this is not an issue, as if web2 was compromised in the end we will compare the result to the dataHash for integrity of the proof
-    mapping(address => mapping(string => bytes32)) private personalDataProofs;
+    mapping(address => mapping(string => bytes32)) public personalDataProofs;
     
     constructor(ERC20 _itheumToken) {
         itheumToken = _itheumToken;
     }
 
     function setItheumTreasury(address _address) external onlyOwner returns(bool) {
+        require(_address != address(0), "Address zero not allowed");
+
         itheumTreasury = _address;
 
         return true;
@@ -107,11 +109,6 @@ contract ItheumDataDex is Ownable {
         }
         
         return hasAccess;
-    }
-
-    // get a personal data proof (PDP)
-    function getPersonalDataProof(address _proofOwner, string calldata _dataPackId) external view returns (bytes32) {
-        return personalDataProofs[_proofOwner][_dataPackId];
     }
 
     // remove a personal data proof (PDP)
