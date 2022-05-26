@@ -66,6 +66,8 @@ contract ItheumDataDex is Ownable {
     
     // A buyer, buying access to a advertised data pack
     function buyDataPack(string calldata _dataPackId) external {
+        require(itheumTreasury != address(0), "Itheum treasury address isn't set");
+
         DataPack memory dataPack = dataPacks[_dataPackId];
 
         require(dataPack.seller != address(0), "You can't buy a non-existing data pack");
@@ -78,7 +80,7 @@ contract ItheumDataDex is Ownable {
         require(itheumOfBuyer >= dataPack.priceInItheum + buyerFee, "You dont have sufficient ITHEUM to proceed");
         
         uint256 allowance = itheumToken.allowance(msg.sender, address(this));
-        require(allowance >= buyerFee, "Check the token allowance");
+        require(allowance >= dataPack.priceInItheum + buyerFee, "Check the token allowance");
 
         itheumToken.transferFrom(msg.sender, itheumTreasury, buyerFee + sellerFee);
         itheumToken.transferFrom(msg.sender, dataPack.seller, dataPack.priceInItheum - sellerFee);
