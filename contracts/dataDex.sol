@@ -90,11 +90,7 @@ contract ItheumDataDex is Ownable {
     function verifyData(string calldata _dataPackId, string calldata _dataHashStr) external view returns(bool) {
         bytes32 dataHash = stringToBytes32(_dataHashStr);
          
-        if (dataPacks[_dataPackId].dataHash == dataHash) {
-            return true; 
-        } else {
-            return false;
-        }
+        return dataPacks[_dataPackId].dataHash == dataHash;
     }
     
     // is an address as owner of a datapack?
@@ -131,6 +127,7 @@ contract ItheumDataDex is Ownable {
     
     function stringToBytes32(string memory _source) internal pure returns (bytes32 result) {
         bytes memory tempEmptyStringTest = bytes(_source);
+
         if (tempEmptyStringTest.length == 0) {
             return 0x0;
         }
