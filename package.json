@@ -1,5 +1,6 @@
 {
-  "name": "root",
+  "name": "itheumcore",
+  "version": "0.2.0",
   "private": true,
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",

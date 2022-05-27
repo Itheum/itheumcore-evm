@@ -1,5 +1,5 @@
 # Itheum Core
-The core itheum technology repository; it holds smart contracts, chain dev kits, unit tests etc.
+The core itheum technology repository; it hv0.1.0s smart contracts, chain dev kits, unit tests etc.
 
 ![Itheum Core](https://raw.githubusercontent.com/Itheum/itheumcore/main/itheum-core-hero.png)
 
@@ -13,7 +13,7 @@ The repo uses lerna for better management of sub/mono repos. Here is how you use
 Contracts dev is via hardhat. Some useful commands:
 
 - `npx hardhat accounts`: Gives you your accounts
-- `npx hardhat compile`: Compiles all contracts in folder
+- `npx hardhat compile`: Compiles all contracts in fv0.1.0er
 - `npx hardhat test`: runs unit tests or use `npx hardhat watch test` to run in test watch mode
 - `npx hardhat watch tdd` to run in TDD watch mode (updating contracts and saving will compile all and run tests)
 
@@ -23,13 +23,13 @@ Contracts dev is via hardhat. Some useful commands:
 
 #### Deploying contract dev environment
 - first run the local chain; in a seperate terminal run `npx hardhat node` (this loads chain into localhost:8545)
-- Compile all contracts in folde via `npx hardhat compile`
+- Compile all contracts in fv0.1.0e via `npx hardhat compile`
 - deploy via `npx hardhat run scripts/itheumcore-script.js --network localhost`
 
 ### Deploying into testnet
-- Compile all contracts in folde via `npx hardhat compile`
+- Compile all contracts in fv0.1.0e via `npx hardhat compile`
 - deploy via `npx hardhat run scripts/itheumcore-script.js --network {testnet_code}`
-- The following `{testnet_code}`s are supported: `eth_rop_testnet` (not used yet) `eth_rin_testnet` (not used yet) `pol_mum_testnet` `avalanche_testnet` `bsc_testnet` `harmony_testnet` `platon_testnet`, `parastate_testnet`
+- The following `{testnet_code}`s are supported: `eth_rop_testnet`, `eth_rin_testnet` (not used yet) `pol_mum_testnet` `avalanche_testnet` `bsc_testnet` `harmony_testnet` `platon_testnet`, `parastate_testnet`
 
 ### Local environemnt dev requirements
 - If you are `Deploying into testnet` , it needs some ENV vars. You need to create a `.env` file and add the ENV vars are used in the `hardhat.config.js` file.
@@ -47,10 +47,10 @@ Contracts dev is via hardhat. Some useful commands:
 ### EVM Cross-Chain Deployments
 Contract | ETH TESTNET ROPSTEN | ETH TESTNET RINKY | POLYGON TESTNET MUNBAI | AVALANCHE TESTNET | BSC TESTNET | HARMONY TESTNET | PLATON TESTNET | PARASTATE TESTNET |
 --- | --- | --- | --- |--- |--- |--- |--- |---
-TOKEN | 0x385EeCD59FB79dC3876af1978bFEdB2dD84C4524 | 0xb38731CEC66340ff1c9F58B8ceCDEdb9B4Cb8f38 | 0x63E2b565fCE9d49bA102BB84F3C239A02259b4aa | 0x2982563dAf8Eeb43Cec78bf4E1A8614BD56CD1e3 | 0x83487aE8dD740C8DB238d4ccD945cfb15a96487a | 0xcbEAF3BDe82155F56486Fb5a1072cb8baAf547cc | 0x5FbDB2315678afecb367f032d93F642f64180aa3 | 0xD77E137B6483bC8d392b73D02E733e3DE13Dd72d
-DATA DEX | 0x502e65a881c95EEEc880872c0098c0e7cFCBb4a1 | 0xaC0Dee3dd39e27470A8992aC9C94B09385C2f2A5 | 0x481b5D4eb98c88a53876314f47D2cAaea174a630 | 0x56c88e7ed9Aa4792119c66D71815A6bD9DE0A5E0 | 0x9DD467a4d42d952406DF21038464Bb9640a3fc56 | 0x1429859428C0aBc9C2C47C8Ee9FBaf82cFA0F20f | 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 | 0x1bd7fa41A509d016053eb6C67165d632321a20A9
-DATA NFT | 0x48d9743147C2FcB5050aDE3eD2Cad5B489888099 | 0xD77E137B6483bC8d392b73D02E733e3DE13Dd72d | 0x4754a8477bc7bdfbAEBff90210A44913d0A8C97E | 0xCb0254502D84242f8ad477eb41723e99fdC6e847 | 0x80cE1EFc4a9f7fB2BC38583fA00CA54051Fa7A15 | 0xB0D4afd8879eD9F52b28595d31B441D079B2Ca07 | 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0 | 0x360570F7D60Df8BC670C2899002C44a2C382270E
-CLAIM PORTAL | X | X | 0xD77E137B6483bC8d392b73D02E733e3DE13Dd72d | 0xb38731CEC66340ff1c9F58B8ceCDEdb9B4Cb8f38 | 0xD77E137B6483bC8d392b73D02E733e3DE13Dd72d | X | X | X
+TOKEN | 0xBDdb6B94d9B60Ac1D788676a287e8c474D68D44A | 0xb38731CEC66340ff1c9F58B8ceCDEdb9B4Cb8f38 (v0.1.0) | 0x91ff16CDfeF176b1576E640422C5BA281A242400 | 0x2982563dAf8Eeb43Cec78bf4E1A8614BD56CD1e3 (v0.1.0) | 0x91ff16CDfeF176b1576E640422C5BA281A242400 | 0xcbEAF3BDe82155F56486Fb5a1072cb8baAf547cc (v0.1.0) | 0x5FbDB2315678afecb367f032d93F642f64180aa3 (v0.1.0) | 0xD77E137B6483bC8d392b73D02E733e3DE13Dd72d (v0.1.0)
+DATA DEX | 0xD01A4bCeD9324034db6cb03E50b76F58496F5FB8 | 0xaC0Dee3dd39e27470A8992aC9C94B09385C2f2A5 (v0.1.0) | 0xBDdb6B94d9B60Ac1D788676a287e8c474D68D44A | 0x56c88e7ed9Aa4792119c66D71815A6bD9DE0A5E0 (v0.1.0) | 0xBDdb6B94d9B60Ac1D788676a287e8c474D68D44A | 0x1429859428C0aBc9C2C47C8Ee9FBaf82cFA0F20f (v0.1.0) | 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 (v0.1.0) | 0x1bd7fa41A509d016053eb6C67165d632321a20A9 (v0.1.0)
+DATA NFT | 0xBDdb6B94d9B60Ac1D788676a287e8c474D68D44A | 0xD77E137B6483bC8d392b73D02E733e3DE13Dd72d (v0.1.0) | 0xD01A4bCeD9324034db6cb03E50b76F58496F5FB8 | 0xCb0254502D84242f8ad477eb41723e99fdC6e847 (v0.1.0) | 0xD01A4bCeD9324034db6cb03E50b76F58496F5FB8 | 0xB0D4afd8879eD9F52b28595d31B441D079B2Ca07 (v0.1.0) | 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0 (v0.1.0) | 0x360570F7D60Df8BC670C2899002C44a2C382270E (v0.1.0)
+CLAIM PORTAL | 0x159ea49EbF5DCd06efFce53b1fe851e9c2CCFd91 | X | 0x985A5c96663C9c44d46Ea061f4b7E50118180F8d | 0xb38731CEC66340ff1c9F58B8ceCDEdb9B4Cb8f38 | 0x985A5c96663C9c44d46Ea061f4b7E50118180F8d | X | X | X
 
 
 ## Known Cross-Chain Errors
