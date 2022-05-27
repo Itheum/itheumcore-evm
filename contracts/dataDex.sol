@@ -80,13 +80,14 @@ contract ItheumDataDex is Ownable {
         require(itheumOfBuyer >= dataPack.priceInItheum + buyerFee, "You dont have sufficient ITHEUM to proceed");
         
         uint256 allowance = itheumToken.allowance(msg.sender, address(this));
-        require(allowance >= feeInItheum, "Check the token allowance");
+        require(allowance >= dataPack.priceInItheum + buyerFee, "Check the token allowance");
         
-        DataPack memory targetPack = dataPacks[dataPackId];
+        DataPack memory targetPack = dataPacks[_dataPackId];
         
-        itheumToken.transferFrom(msg.sender, targetPack.seller, feeInItheum);
-        
-        accessAllocations[dataPackId][msg.sender] = true;
+        itheumToken.transferFrom(msg.sender, targetPack.seller, dataPack.priceInItheum - sellerFee);
+        itheumToken.transferFrom(msg.sender, itheumTreasury, sellerFee + buyerFee);
+
+        accessAllocations[_dataPackId][msg.sender] = true;
 
         emit PurchaseEvent(_dataPackId, msg.sender, dataPack.seller, buyerFee + sellerFee);
     }
