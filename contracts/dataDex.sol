@@ -15,7 +15,7 @@ contract ItheumDataDex {
     mapping(string => DataPack) public dataPacks;
     
     // list of addresses that has access to a dataPackId
-    mapping(string => address[]) private accessAllocations;
+    mapping(string => mapping(address => bool)) private accessAllocations;
 
     // address[dataPackId] will give you the dataHash (i.e. the proof for the progId reponse)
     // in web2, the dataPackId can link to a web2 storage of related meta (programId + program onbaording link etc)
@@ -60,7 +60,7 @@ contract ItheumDataDex {
         
         itheumToken.transferFrom(msg.sender, targetPack.seller, feeInItheum);
         
-        accessAllocations[dataPackId].push(msg.sender);
+        accessAllocations[dataPackId][msg.sender] = true;
 
         emit PurchaseEvent(dataPackId, msg.sender, targetPack.seller, feeInItheum);
         
@@ -71,27 +71,12 @@ contract ItheumDataDex {
     function verifyData(string calldata dataPackId, string calldata dataHashStr) external view returns(bool) {
         bytes32 dataHash = stringToBytes32(dataHashStr);
          
-        if (dataPacks[dataPackId].dataHash == dataHash) {
-            return true; 
-        } else {
-            return false;
-        }
+        return dataPacks[dataPackId].dataHash == dataHash;
     }
     
     // is an address as owner of a datapack?
     function checkAccess(string calldata dataPackId) public view returns(bool) {
-        address[] memory matchedAllocation = accessAllocations[dataPackId];
-        bool hasAccess = false;
-        
-        for (uint i=0; i < matchedAllocation.length; i++) {
-            if (msg.sender == matchedAllocation[i]) {
-                hasAccess = true;
-                break;
-            }
-            
-        }
-        
-        return hasAccess;
+        return accessAllocations[dataPackId][msg.sender];
     }
 
     // get a personal data proof (PDP)
