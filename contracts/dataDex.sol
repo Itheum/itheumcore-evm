@@ -25,7 +25,7 @@ contract ItheumDataDex is Ownable {
     mapping(string => DataPack) public dataPacks;
     
     // list of addresses that has access to a dataPackId
-    mapping(string => address[]) private accessAllocations;
+    mapping(string => mapping(address => bool)) private accessAllocations;
 
     // address[dataPackId] will give you the dataHash (i.e. the proof for the progId reponse)
     // in web2, the dataPackId can link to a web2 storage of related meta (programId + program onbaording link etc)
@@ -80,12 +80,13 @@ contract ItheumDataDex is Ownable {
         require(itheumOfBuyer >= dataPack.priceInItheum + buyerFee, "You dont have sufficient ITHEUM to proceed");
         
         uint256 allowance = itheumToken.allowance(msg.sender, address(this));
-        require(allowance >= dataPack.priceInItheum + buyerFee, "Check the token allowance");
-
-        itheumToken.transferFrom(msg.sender, itheumTreasury, buyerFee + sellerFee);
-        itheumToken.transferFrom(msg.sender, dataPack.seller, dataPack.priceInItheum - sellerFee);
-
-        accessAllocations[_dataPackId].push(msg.sender);
+        require(allowance >= feeInItheum, "Check the token allowance");
+        
+        DataPack memory targetPack = dataPacks[dataPackId];
+        
+        itheumToken.transferFrom(msg.sender, targetPack.seller, feeInItheum);
+        
+        accessAllocations[dataPackId][msg.sender] = true;
 
         emit PurchaseEvent(_dataPackId, msg.sender, dataPack.seller, buyerFee + sellerFee);
     }
@@ -98,19 +99,8 @@ contract ItheumDataDex is Ownable {
     }
     
     // is an address as owner of a datapack?
-    function checkAccess(string calldata _dataPackId) public view returns(bool) {
-        address[] memory matchedAllocation = accessAllocations[_dataPackId];
-        bool hasAccess = false;
-        
-        for (uint i=0; i < matchedAllocation.length; i++) {
-            if (msg.sender == matchedAllocation[i]) {
-                hasAccess = true;
-                break;
-            }
-            
-        }
-        
-        return hasAccess;
+    function checkAccess(string calldata dataPackId) public view returns(bool) {
+        return accessAllocations[dataPackId][msg.sender];
     }
 
     // remove a personal data proof (PDP)
