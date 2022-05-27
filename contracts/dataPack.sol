@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract ItheumDataDex is Ownable {
+contract ItheumDataPack is Ownable {
 
     event AdvertiseEvent(string indexed dataPackId, address indexed seller, uint256 priceInItheum);
     event PurchaseEvent(string indexed dataPackId, address indexed buyer, address indexed seller, uint256 feeInItheum);
