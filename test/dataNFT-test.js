@@ -212,7 +212,7 @@ describe("ItheumDataNFT", async function () {
     await expect(dataNFT.createDataNFT('https://127.0.0.1', 0, 10, false)).to.be.revertedWith("Price must be > 0");
   });
 
-  it("should revert when minting with a zero price", async function () {
+  it("should revert when more than 100 percent royalties are set", async function () {
     await expect(dataNFT.createDataNFT('https://127.0.0.1', 1000, 101, false)).to.be.revertedWith("Royalty must be <= 100");
   });
 
@@ -258,9 +258,32 @@ describe("ItheumDataNFT", async function () {
     await expect(dataNFT.connect(addr1).buyDataNFT(owner.address, addr1.address, 1, 0)).to.be.revertedWith("DataNFT is currently not transferable");
   });
 
-  it("should revert when allowance is set", async function () {
+  it("should revert when too few tokens are owned", async function () {
     const createDataNftTx = await dataNFT.createDataNFT('https://127.0.0.1', 1000, 10, false);
     await createDataNftTx.wait();
+
+    // addr1 claims $ITHEUM
+    const faucetTx = await itheumToken.connect(addr1).faucet(addr1.address, 1000);
+    faucetTx.wait();
+
+    // addr1 approves dataNFT contract to transfer funds on his behalf
+    const approveTx = await itheumToken.connect(addr1).approve(dataNFTAddress, 1100);
+    await approveTx.wait();
+
+    await expect(dataNFT.connect(addr1).buyDataNFT(owner.address, addr1.address, 1, 0)).to.be.revertedWith("You don't have sufficient ITHEUM to proceed");
+  });
+
+  it("should revert when enough tokens are owned but to less allowance is set", async function () {
+    const createDataNftTx = await dataNFT.createDataNFT('https://127.0.0.1', 1000, 10, false);
+    await createDataNftTx.wait();
+
+    // addr1 claims $ITHEUM
+    const faucetTx = await itheumToken.connect(addr1).faucet(addr1.address, 1100);
+    faucetTx.wait();
+
+    // addr1 approves dataNFT contract to transfer funds on his behalf
+    const approveTx = await itheumToken.connect(addr1).approve(dataNFTAddress, 1000);
+    await approveTx.wait();
 
     await expect(dataNFT.connect(addr1).buyDataNFT(owner.address, addr1.address, 1, 0)).to.be.revertedWith("Allowance in ITHEUM contract is too low");
   });
