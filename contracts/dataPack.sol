@@ -1,10 +1,9 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "./ItheumToken.sol";
 
-contract ItheumDataPack is Ownable {
+contract ItheumDataPack {
 
     event AdvertiseEvent(string indexed dataPackId, address indexed seller, uint256 priceInItheum);
     event PurchaseEvent(string indexed dataPackId, address indexed buyer, address indexed seller, uint256 feeInItheum);
@@ -18,9 +17,7 @@ contract ItheumDataPack is Ownable {
     uint8 public BUYER_FEE_IN_PERCENT = 2;
     uint8 public SELLER_FEE_IN_PERCENT = 2;
 
-    ERC20 public itheumToken;
-
-    address public itheumTreasury;
+    ItheumToken public itheumToken;
 
     mapping(string => DataPack) public dataPacks;
     
@@ -32,16 +29,8 @@ contract ItheumDataPack is Ownable {
     // ... this is not an issue, as if web2 was compromised in the end we will compare the result to the dataHash for integrity of the proof
     mapping(address => mapping(string => bytes32)) public personalDataProofs;
     
-    constructor(ERC20 _itheumToken) {
+    constructor(ItheumToken _itheumToken) {
         itheumToken = _itheumToken;
-    }
-
-    function setItheumTreasury(address _address) external onlyOwner returns(bool) {
-        require(_address != address(0), "Address zero not allowed");
-
-        itheumTreasury = _address;
-
-        return true;
     }
     
     // Data Owner advertising a data pack for sale
@@ -66,7 +55,9 @@ contract ItheumDataPack is Ownable {
     
     // A buyer, buying access to a advertised data pack
     function buyDataPack(string calldata _dataPackId) external {
-        require(itheumTreasury != address(0), "Itheum treasury address isn't set");
+        address dataPackFeeTreasury = itheumToken.dataPackFeeTreasury();
+
+        require(dataPackFeeTreasury != address(0), "Itheum treasury address isn't set");
 
         DataPack memory dataPack = dataPacks[_dataPackId];
 
@@ -85,7 +76,7 @@ contract ItheumDataPack is Ownable {
         DataPack memory targetPack = dataPacks[_dataPackId];
         
         itheumToken.transferFrom(msg.sender, targetPack.seller, dataPack.priceInItheum - sellerFee);
-        itheumToken.transferFrom(msg.sender, itheumTreasury, sellerFee + buyerFee);
+        itheumToken.transferFrom(msg.sender, dataPackFeeTreasury, sellerFee + buyerFee);
 
         accessAllocations[_dataPackId][msg.sender] = true;
 

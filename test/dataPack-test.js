@@ -13,15 +13,6 @@ describe("DataPack", async function () {
     dataPackAddress = (await dataPack.deployed()).address;
   });
 
-  it("owner should be able to set the ITHEUM treasury address", async function () {
-    expect(await dataPack.itheumTreasury()).to.be.equal('0x0000000000000000000000000000000000000000');
-
-    const setItheumTreasuryAddressTx = await dataPack.setItheumTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
-    await setItheumTreasuryAddressTx.wait();
-
-    expect(await dataPack.itheumTreasury()).to.be.equal('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
-  });
-
   it("user should be able to advertise data pack for sale", async function () {
     expect((await dataPack.dataPacks('123abc')).seller).to.be.equal('0x0000000000000000000000000000000000000000');
     expect((await dataPack.personalDataProofs(owner.address, '123abc'))).to.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
@@ -34,8 +25,8 @@ describe("DataPack", async function () {
   });
 
   it("user (addr1) should be able to buy an advertised data pack from another user (addr2)", async function () {
-    const setItheumTreasuryAddressTx = await dataPack.setItheumTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
-    await setItheumTreasuryAddressTx.wait();
+    const setDataPackFeeTreasuryAddressTx = await itheumToken.setDataPackFeeTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+    await setDataPackFeeTreasuryAddressTx.wait();
 
     const advertiseForSaleTx = await dataPack.connect(addr2).advertiseForSale('123abc', 'demoHashStr', 1000);
     await advertiseForSaleTx.wait();
@@ -68,8 +59,8 @@ describe("DataPack", async function () {
   });
 
   it("user (addr1) should not be able to buy an advertised data pack from another user (addr2) when he has too less ITHEUM", async function () {
-    const setItheumTreasuryAddressTx = await dataPack.setItheumTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
-    await setItheumTreasuryAddressTx.wait();
+    const setDataPackFeeTreasuryAddressTx = await itheumToken.setDataPackFeeTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+    await setDataPackFeeTreasuryAddressTx.wait();
 
     const advertiseForSaleTx = await dataPack.connect(addr2).advertiseForSale('123abc', 'demoHashStr', 1000);
     await advertiseForSaleTx.wait();
@@ -86,8 +77,8 @@ describe("DataPack", async function () {
   });
 
   it("user (addr2) should be able remove personal data proof", async function () {
-    const setItheumTreasuryAddressTx = await dataPack.setItheumTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
-    await setItheumTreasuryAddressTx.wait();
+    const setDataPackFeeTreasuryAddressTx = await itheumToken.setDataPackFeeTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+    await setDataPackFeeTreasuryAddressTx.wait();
 
     const advertiseForSaleTx = await dataPack.connect(addr2).advertiseForSale('123abc', 'demoHashStr', 1000);
     await advertiseForSaleTx.wait();
@@ -101,8 +92,8 @@ describe("DataPack", async function () {
   });
 
   it("user (addr1) should not be able remove personal data proof", async function () {
-    const setItheumTreasuryAddressTx = await dataPack.setItheumTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
-    await setItheumTreasuryAddressTx.wait();
+    const setDataPackFeeTreasuryAddressTx = await itheumToken.setDataPackFeeTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+    await setDataPackFeeTreasuryAddressTx.wait();
 
     const advertiseForSaleTx = await dataPack.connect(addr2).advertiseForSale('123abc', 'demoHashStr', 1000);
     await advertiseForSaleTx.wait();
@@ -116,8 +107,8 @@ describe("DataPack", async function () {
   });
 
   it("user (addr1) should not be able to buy an advertised data pack from another user (addr2) when to less approved for dataPack contract", async function () {
-    const setItheumTreasuryAddressTx = await dataPack.setItheumTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
-    await setItheumTreasuryAddressTx.wait();
+    const setDataPackFeeTreasuryAddressTx = await itheumToken.setDataPackFeeTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+    await setDataPackFeeTreasuryAddressTx.wait();
 
     const advertiseForSaleTx = await dataPack.connect(addr2).advertiseForSale('123abc', 'demoHashStr', 1000);
     await advertiseForSaleTx.wait();
@@ -134,18 +125,14 @@ describe("DataPack", async function () {
   });
 
   it("should verify data hash correctly", async function () {
-    const setItheumTreasuryAddressTx = await dataPack.setItheumTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
-    await setItheumTreasuryAddressTx.wait();
+    const setDataPackFeeTreasuryAddressTx = await itheumToken.setDataPackFeeTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+    await setDataPackFeeTreasuryAddressTx.wait();
 
     const advertiseForSaleTx = await dataPack.connect(addr2).advertiseForSale('123abc', 'demoHashStr', 1000);
     await advertiseForSaleTx.wait();
 
     expect(await dataPack.verifyData('123abc', 'demoHashStr')).to.be.true;
     expect(await dataPack.verifyData('123abc', 'otherHashStr')).to.be.false;
-  });
-
-  it("should revert when not owner tries to set the ITHEUM treasury address", async function () {
-    await expect(dataPack.connect(addr1).setItheumTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6')).to.be.revertedWith('Ownable: caller is not the owner');
   });
 
   it("should revert when data pack id already exists", async function () {
@@ -168,8 +155,8 @@ describe("DataPack", async function () {
   });
 
   it("should revert when user tries to buy a non-existing data pack", async function () {
-    const setItheumTreasuryAddressTx = await dataPack.setItheumTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
-    await setItheumTreasuryAddressTx.wait();
+    const setDataPackFeeTreasuryAddressTx = await itheumToken.setDataPackFeeTreasury('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+    await setDataPackFeeTreasuryAddressTx.wait();
 
     await expect(dataPack.buyDataPack('123abc')).to.be.revertedWith('You can\'t buy a non-existing data pack');
   });
