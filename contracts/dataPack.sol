@@ -21,8 +21,9 @@ contract ItheumDataPack {
 
     mapping(string => DataPack) public dataPacks;
     
-    // list of addresses that has access to a dataPackId
+    // dataPackId => address => access
     mapping(string => mapping(address => bool)) private accessAllocations;
+    mapping(string => uint) public accessAllocationCount;
 
     // address[dataPackId] will give you the dataHash (i.e. the proof for the progId reponse)
     // in web2, the dataPackId can link to a web2 storage of related meta (programId + program onbaording link etc)
@@ -55,6 +56,8 @@ contract ItheumDataPack {
     
     // A buyer, buying access to a advertised data pack
     function buyDataPack(string calldata _dataPackId) external {
+        require(!checkAccess(_dataPackId), "You already have bought this dataPack");
+
         address dataPackFeeTreasury = itheumToken.dataPackFeeTreasury();
 
         require(dataPackFeeTreasury != address(0), "Itheum treasury address isn't set");
@@ -79,6 +82,7 @@ contract ItheumDataPack {
         itheumToken.transferFrom(msg.sender, dataPackFeeTreasury, sellerFee + buyerFee);
 
         accessAllocations[_dataPackId][msg.sender] = true;
+        accessAllocationCount[_dataPackId]++;
 
         emit PurchaseEvent(_dataPackId, msg.sender, dataPack.seller, buyerFee + sellerFee);
     }
@@ -96,8 +100,17 @@ contract ItheumDataPack {
     }
 
     // remove a personal data proof (PDP)
-    function removePersonalDataProof(string calldata _dataPackId) external returns (bool) {
+    function removePersonalDataProof(string calldata _dataPackId) external returns(bool) {
         delete personalDataProofs[msg.sender][_dataPackId];
+
+        return true;
+    }
+
+    function deleteDataPack(string calldata _dataPackId) external returns(bool) {
+        require(msg.sender == dataPacks[_dataPackId].seller, "Only seller can delete dataPack");
+        require(accessAllocationCount[_dataPackId] == 0, "You only can delete dataPacks with zero access");
+
+        delete dataPacks[_dataPackId];
 
         return true;
     }
