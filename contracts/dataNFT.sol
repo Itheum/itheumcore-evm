@@ -1,10 +1,10 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+import "./dataDex.sol";
 import "./SharedStructs.sol";
 
 contract ItheumDataNFT is ERC721 {
@@ -12,13 +12,18 @@ contract ItheumDataNFT is ERC721 {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
-    ERC20 public itheumToken;
-
     event DataNFTCreated(uint256 indexed _tokenId, address indexed _creator, uint8 indexed _royaltyInPercent);
     event DataNFTTraded(uint256 indexed _tokenId, address indexed _from, address indexed _to, uint256 _priceInItheum, address _creator, uint256 _royaltyInItheum);
 
-    constructor(ERC20 _itheumToken) ERC721("Itheum Data NFT", "DAFT") {
-        itheumToken = _itheumToken;
+    DataDex public dataDex;
+
+    modifier onlyDataDex() {
+        require(msg.sender == address(dataDex), 'Trades are only possible via DataDex');
+        _;
+    }
+
+    constructor(DataDex _dataDex) ERC721("Itheum Data NFT", "DAFT") {
+        dataDex = _dataDex;
     }
 
     // tokenId -> dataNFT
@@ -103,7 +108,7 @@ contract ItheumDataNFT is ERC721 {
         _safeTransfer(_from, _to, _tokenId, _data);
     }
 
-    function buyDataNFT(uint256 _tokenId, address _buyer, uint256 _priceInItheum, uint256 _royaltyInItheum, bytes memory _data) public returns(bool) {
+    function buyDataNFT(uint256 _tokenId, address _buyer, uint256 _priceInItheum, uint256 _royaltyInItheum, bytes memory _data) public onlyDataDex returns(bool) {
         address from = ownerOf(_tokenId);
 
         SharedStructs.DataNFT memory dataNFT = _dataNFTs[_tokenId];
