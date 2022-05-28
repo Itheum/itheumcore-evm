@@ -10,7 +10,13 @@ contract ItheumToken is ERC20, ERC20Burnable, Ownable {
     mapping(address => uint256) public faucetLastUsed;
 
     address public dataPackFeeTreasury;
-    
+    address public dataNFTFeeTreasury;
+
+    modifier noAddressZero(address _address) {
+        require(_address != address(0x0), 'Address zero not allowed');
+        _;
+    }
+
     constructor() ERC20("Itheum Token", "ITHEUM") {
         _mint(msg.sender, 1000000000 * 10 ** decimals());
     }
@@ -19,11 +25,13 @@ contract ItheumToken is ERC20, ERC20Burnable, Ownable {
         _mint(to, amount);
     }
 
-    function setDataPackFeeTreasury(address _address) external onlyOwner returns(bool) {
-        require(_address != address(0), "Address zero not allowed");
-
+    function setDataPackFeeTreasury(address _address) external onlyOwner noAddressZero(_address) returns(bool) {
         dataPackFeeTreasury = _address;
+        return true;
+    }
 
+    function setDataNFTFeeTreasury(address _address) external onlyOwner noAddressZero(_address) returns(bool) {
+        dataNFTFeeTreasury = _address;
         return true;
     }
     

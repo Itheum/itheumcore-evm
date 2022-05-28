@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+import "./SharedStructs.sol";
+
 contract ItheumDataNFT is ERC721 {
     
     using Counters for Counters.Counter;
@@ -18,20 +20,11 @@ contract ItheumDataNFT is ERC721 {
     constructor(ERC20 _itheumToken) ERC721("Itheum Data NFT", "DAFT") {
         itheumToken = _itheumToken;
     }
-    
-    struct DataNFT {
-        uint256 priceInItheum;
-        address creator;
-        uint8 royaltyInPercent; // 0-100
-        bool transferable; // specifies if dataNFT is tradeable at all
-        bool secondaryTradeable; // specifies if dataNFT is tradeable via 'safeTransferFrom' (no $ITHEUM token transfers then)
-        string uri;
-    }
 
     // tokenId -> dataNFT
-    mapping (uint256 => DataNFT) private _dataNFTs;
+    mapping (uint256 => SharedStructs.DataNFT) private _dataNFTs;
 
-    function dataNFTs(uint256 _tokenId) public view returns (DataNFT memory) {
+    function dataNFTs(uint256 _tokenId) public view returns (SharedStructs.DataNFT memory) {
         require(_exists(_tokenId), "DataNFT doesn't exist");
         return _dataNFTs[_tokenId];
     }
@@ -50,7 +43,7 @@ contract ItheumDataNFT is ERC721 {
 
         _safeMint(msg.sender, newNFTId);
         
-        _dataNFTs[newNFTId] = DataNFT({
+        _dataNFTs[newNFTId] = SharedStructs.DataNFT({
             priceInItheum: _priceInItheum,
             creator: msg.sender,
             royaltyInPercent: _royaltyInPercent,
@@ -110,38 +103,19 @@ contract ItheumDataNFT is ERC721 {
         _safeTransfer(_from, _to, _tokenId, _data);
     }
 
-    function buyDataNFT(address _from, address _to, uint256 _tokenId, bytes memory _data) public returns(bool) {
-        require(_exists(_tokenId), "DataNFT doesn't exist");
-        require(ownerOf(_tokenId) == _from, "'from' and 'ownerOf(tokenId)' doesn't match");
+    function buyDataNFT(uint256 _tokenId, address _buyer, uint256 _priceInItheum, uint256 _royaltyInItheum, bytes memory _data) public returns(bool) {
+        address from = ownerOf(_tokenId);
 
-        DataNFT memory dataNFT = _dataNFTs[_tokenId];
-
-        require(dataNFT.transferable, "DataNFT is currently not transferable");
-        require(getApproved(_tokenId) == address(this), "DataNFT contract must be approved to transfer the NFT");
-
-        uint256 priceInItheum = dataNFT.priceInItheum;
-        uint256 royaltyInItheum = priceInItheum * dataNFT.royaltyInPercent / 100;
-
-        // check the balance of $ITHEUM for buyer
-        uint256 balance = itheumToken.balanceOf(_to);
-        require(balance >= priceInItheum + royaltyInItheum, "You don't have sufficient ITHEUM to proceed");
-
-        // check the allowance of $ITHEUM for this contract to spend from buyer
-        uint256 allowance = itheumToken.allowance(_to, address(this));
-        require(allowance >= priceInItheum + royaltyInItheum, "Allowance in ITHEUM contract is too low");
-
-        // transfer $ITHEUM to owner and creator
-        itheumToken.transferFrom(_to, _from, priceInItheum);
-        itheumToken.transferFrom(_to, dataNFT.creator, royaltyInItheum);
+        SharedStructs.DataNFT memory dataNFT = _dataNFTs[_tokenId];
 
         // transfer ownership of NFT
-        _safeTransfer(_from, _to, _tokenId, _data);
+        _safeTransfer(from, _buyer, _tokenId, _data);
 
         // reset transferable for new owner, otherwise another
         // use would be able to buy immediately
         setDataNFTTransferable(_tokenId, false);
 
-        emit DataNFTTraded(_tokenId, _from, _to, priceInItheum, dataNFT.creator, royaltyInItheum);
+        emit DataNFTTraded(_tokenId, from, _buyer, _priceInItheum, dataNFT.creator, _royaltyInItheum);
 
         return true;
     }
