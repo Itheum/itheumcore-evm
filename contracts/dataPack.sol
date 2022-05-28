@@ -76,9 +76,7 @@ contract ItheumDataPack {
         uint256 allowance = itheumToken.allowance(msg.sender, address(this));
         require(allowance >= dataPack.priceInItheum + buyerFee, "Check the token allowance");
         
-        DataPack memory targetPack = dataPacks[_dataPackId];
-        
-        itheumToken.transferFrom(msg.sender, targetPack.seller, dataPack.priceInItheum - sellerFee);
+        itheumToken.transferFrom(msg.sender, dataPack.seller, dataPack.priceInItheum - sellerFee);
         itheumToken.transferFrom(msg.sender, dataPackFeeTreasury, sellerFee + buyerFee);
 
         accessAllocations[_dataPackId][msg.sender] = true;
