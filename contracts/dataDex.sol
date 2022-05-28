@@ -46,8 +46,7 @@ contract DataDex is Ownable, Pausable {
 
         require(seller != address(0), "You can't buy a non-existing data pack");
 
-        uint256 sellerFee = priceInItheum * SELLER_FEE_IN_PERCENT / 100;
-        uint256 buyerFee = priceInItheum * BUYER_FEE_IN_PERCENT / 100;
+        (uint256 sellerFee, uint256 buyerFee) = getSellerAndBuyerFee(priceInItheum);
 
         // check the balance of $ITHEUM for buyer
         uint256 itheumOfBuyer = itheumToken.balanceOf(msg.sender);
@@ -78,8 +77,8 @@ contract DataDex is Ownable, Pausable {
 
         uint256 priceInItheum = dataNFT.priceInItheum;
         uint256 royaltyInItheum = priceInItheum * dataNFT.royaltyInPercent / 100;
-        uint256 sellerFee = priceInItheum * SELLER_FEE_IN_PERCENT / 100;
-        uint256 buyerFee = priceInItheum * BUYER_FEE_IN_PERCENT / 100;
+
+        (uint256 sellerFee, uint256 buyerFee) = getSellerAndBuyerFee(priceInItheum);
 
         // check the balance of $ITHEUM for buyer
         uint256 balance = itheumToken.balanceOf(msg.sender);
@@ -95,5 +94,10 @@ contract DataDex is Ownable, Pausable {
         itheumToken.transferFrom(msg.sender, dataNFT.creator, royaltyInItheum);
 
         itheumDataNFT.buyDataNFT(_tokenId, _to, priceInItheum, royaltyInItheum, _data);
+    }
+
+    function getSellerAndBuyerFee(uint256 _priceInItheum) view internal returns(uint256 sellerFee, uint256 buyerFee) {
+        sellerFee = _priceInItheum * SELLER_FEE_IN_PERCENT / 100;
+        buyerFee = _priceInItheum * BUYER_FEE_IN_PERCENT / 100;
     }
 }
