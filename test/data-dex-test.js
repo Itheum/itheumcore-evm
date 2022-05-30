@@ -25,22 +25,96 @@ describe("DataDex", async function () {
     DataNFT = await ethers.getContractFactory("ItheumDataNFT");
     dataNFT = await DataNFT.deploy(dataDexAddress);
     dataNFTAddress = (await dataNFT.deployed()).address;
-
-    const setItheumDataPackContractTx = await dataDex.setItheumDataPack(dataPackAddress);
-    await setItheumDataPackContractTx.wait();
-
-    const setItheumDataNFTContractTx = await dataDex.setItheumDataNFT(dataNFTAddress);
-    await setItheumDataNFTContractTx.wait();
   });
 
   describe("general", async () => {
     it("should be initialized correctly", async function () {
       expect(await dataDex.itheumToken()).to.be.equal(itheumTokenAddress);
     });
+
+    it("owner should be able to set Itheum DataPack contract", async function () {
+      expect(await dataDex.itheumDataPack()).to.be.equal('0x0000000000000000000000000000000000000000');
+
+      const setItheumDataPackTx = await dataDex.setItheumDataPack('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+      await setItheumDataPackTx.wait();
+
+      expect(await dataDex.itheumDataPack()).to.be.equal('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+    });
+
+    it("owner should be able to set Itheum DataNFT contract", async function () {
+      expect(await dataDex.itheumDataNFT()).to.be.equal('0x0000000000000000000000000000000000000000');
+
+      const setItheumDataNFTTx = await dataDex.setItheumDataNFT('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+      await setItheumDataNFTTx.wait();
+
+      expect(await dataDex.itheumDataNFT()).to.be.equal('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+    });
+
+    it("owner should be able to set Itheum DataPack and DataNFT contracts", async function () {
+      expect(await dataDex.itheumDataPack()).to.be.equal('0x0000000000000000000000000000000000000000');
+      expect(await dataDex.itheumDataNFT()).to.be.equal('0x0000000000000000000000000000000000000000');
+
+      const setItheumDataNFTTx = await dataDex.setItheumDataPackAndDataNFT('0xE54FfbD968f803a704e74b983bF448F2C76902a6', '0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+      await setItheumDataNFTTx.wait();
+
+      expect(await dataDex.itheumDataPack()).to.be.equal('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+      expect(await dataDex.itheumDataNFT()).to.be.equal('0xE54FfbD968f803a704e74b983bF448F2C76902a6');
+    });
+
+    it("not-owner should not be able to set Itheum DataPack or DataNFT contracts", async function () {
+      await expect(dataDex.connect(addr1).setItheumDataPack('0xE54FfbD968f803a704e74b983bF448F2C76902a6')).to.be.revertedWith("Ownable: caller is not the owner");
+      await expect(dataDex.connect(addr1).setItheumDataNFT('0xE54FfbD968f803a704e74b983bF448F2C76902a6')).to.be.revertedWith("Ownable: caller is not the owner");
+      await expect(dataDex.connect(addr1).setItheumDataPackAndDataNFT('0xE54FfbD968f803a704e74b983bF448F2C76902a6', '0xE54FfbD968f803a704e74b983bF448F2C76902a6')).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("owner should be able to set buyer fee", async function () {
+      expect(await dataDex.buyerFeeInPercent()).to.be.equal(2);
+
+      const setBuyerFeeInPercentTx = await dataDex.setBuyerFeeInPercent(5);
+      await setBuyerFeeInPercentTx.wait();
+
+      expect(await dataDex.buyerFeeInPercent()).to.be.equal(5);
+    });
+
+    it("owner should be able to set seller fee", async function () {
+      expect(await dataDex.sellerFeeInPercent()).to.be.equal(2);
+
+      const setSellerFeeInPercentTx = await dataDex.setSellerFeeInPercent(5);
+      await setSellerFeeInPercentTx.wait();
+
+      expect(await dataDex.sellerFeeInPercent()).to.be.equal(5);
+    });
+
+    it("owner should be able to set buyer and seller fee", async function () {
+      expect(await dataDex.sellerFeeInPercent()).to.be.equal(2);
+      expect(await dataDex.buyerFeeInPercent()).to.be.equal(2);
+
+      const setBuyerAndSellerFeeInPercentTx = await dataDex.setBuyerAndSellerFeeInPercent(5, 5);
+      await setBuyerAndSellerFeeInPercentTx.wait();
+
+      expect(await dataDex.sellerFeeInPercent()).to.be.equal(5);
+      expect(await dataDex.buyerFeeInPercent()).to.be.equal(5);
+    });
+
+    it("not-owner should not be able to set buyer or seller fees", async function () {
+      await expect(dataDex.connect(addr1).setSellerFeeInPercent(5)).to.be.revertedWith("Ownable: caller is not the owner");
+      await expect(dataDex.connect(addr1).setBuyerFeeInPercent(5)).to.be.revertedWith("Ownable: caller is not the owner");
+      await expect(dataDex.connect(addr1).setBuyerAndSellerFeeInPercent(5, 5)).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("buyer and seller fees must not be above 10%", async function () {
+      await expect(dataDex.setSellerFeeInPercent(11)).to.be.revertedWith("Maximum seller fee is 10%");
+      await expect(dataDex.setBuyerFeeInPercent(11)).to.be.revertedWith("Maximum buyer fee is 10%");
+      await expect(dataDex.setBuyerAndSellerFeeInPercent(11, 5)).to.be.revertedWith("Maximum buyer fee is 10%");
+      await expect(dataDex.setBuyerAndSellerFeeInPercent(5, 11)).to.be.revertedWith("Maximum seller fee is 10%");
+    });
   });
 
   describe("dataPack", async () => {
     it("user (addr1) should be able to buy an advertised data pack from another user (addr2)", async function () {
+      const setItheumDataPackAndDataNFTContractsTx = await dataDex.setItheumDataPackAndDataNFT(dataPackAddress, dataNFTAddress);
+      await setItheumDataPackAndDataNFTContractsTx.wait();
+
       const advertiseForSaleTx = await dataPack.connect(addr2).advertiseForSale('123abc', 'demoHashStr', 1000);
       await advertiseForSaleTx.wait();
 
@@ -76,6 +150,9 @@ describe("DataDex", async function () {
     });
 
     it("user (addr1) should not be able to buy an advertised data pack from another user (addr2) when he has too less ITHEUM", async function () {
+      const setItheumDataPackAndDataNFTContractsTx = await dataDex.setItheumDataPackAndDataNFT(dataPackAddress, dataNFTAddress);
+      await setItheumDataPackAndDataNFTContractsTx.wait();
+
       const advertiseForSaleTx = await dataPack.connect(addr2).advertiseForSale('123abc', 'demoHashStr', 1000);
       await advertiseForSaleTx.wait();
 
@@ -87,12 +164,13 @@ describe("DataDex", async function () {
       const faucetTx = await itheumToken.connect(addr1).faucet(addr1.address, 1000);
       faucetTx.wait();
 
-      await expect(dataDex.connect(addr1).buyDataPack(addr2.address, addr1.address, '123abc')).to.be.be.revertedWith("You don't have sufficient ITHEUM to proceed");
+      await expect(dataDex.connect(addr1).buyDataPack(addr2.address, addr1.address, '123abc')).to.be.be.revertedWith("Either you  have insufficient ITHEUM to proceed or allowance in ITHEUM contract is too low");
     });
 
-
-
     it("user (addr1) should not be able to buy an advertised data pack from another user (addr2) when to less approved for dataPack contract", async function () {
+      const setItheumDataPackAndDataNFTContractsTx = await dataDex.setItheumDataPackAndDataNFT(dataPackAddress, dataNFTAddress);
+      await setItheumDataPackAndDataNFTContractsTx.wait();
+
       const advertiseForSaleTx = await dataPack.connect(addr2).advertiseForSale('123abc', 'demoHashStr', 1000);
       await advertiseForSaleTx.wait();
 
@@ -104,10 +182,13 @@ describe("DataDex", async function () {
       const approveTx = await itheumToken.connect(addr1).approve(dataDexAddress, 1000);
       await approveTx.wait();
 
-      await expect(dataDex.connect(addr1).buyDataPack(addr2.address, addr1.address, '123abc')).to.be.revertedWith("Allowance in ITHEUM contract is too low");
+      await expect(dataDex.connect(addr1).buyDataPack(addr2.address, addr1.address, '123abc')).to.be.revertedWith("Either you  have insufficient ITHEUM to proceed or allowance in ITHEUM contract is too low");
     });
 
     it("user should not be able to delete data pack once it is sold", async function () {
+      const setItheumDataPackAndDataNFTContractsTx = await dataDex.setItheumDataPackAndDataNFT(dataPackAddress, dataNFTAddress);
+      await setItheumDataPackAndDataNFTContractsTx.wait();
+
       const advertiseForSaleTx = await dataPack.connect(addr2).advertiseForSale('123abc', 'demoHashStr', 1000);
       await advertiseForSaleTx.wait();
 
@@ -124,10 +205,34 @@ describe("DataDex", async function () {
 
       await expect(dataPack.connect(addr2).deleteDataPack('123abc')).to.be.revertedWith('You only can delete dataPacks with zero access');
     });
+
+    it("user should not be able to buy dataPack when dataDex is paused", async function () {
+      const pauseDexTx = await dataDex.pause();
+      await pauseDexTx.wait();
+
+      const setItheumDataPackAndDataNFTContractsTx = await dataDex.setItheumDataPackAndDataNFT(dataPackAddress, dataNFTAddress);
+      await setItheumDataPackAndDataNFTContractsTx.wait();
+
+      const advertiseForSaleTx = await dataPack.connect(addr2).advertiseForSale('123abc', 'demoHashStr', 1000);
+      await advertiseForSaleTx.wait();
+
+      // addr1 claims $ITHEUM
+      const faucetTx = await itheumToken.connect(addr1).faucet(addr1.address, 1020);
+      faucetTx.wait();
+
+      // addr1 approves dataPack contract to transfer funds on his behalf
+      const approveTx = await itheumToken.connect(addr1).approve(dataDexAddress, 1020);
+      await approveTx.wait();
+
+      await expect(dataDex.connect(addr1).buyDataPack(addr2.address, addr1.address, '123abc')).to.be.revertedWith("Pausable: paused");
+    });
   });
 
   describe("dataNFT", async () => {
     it("user (addr1) should be able to buy from other user (addr2)", async function () {
+      const setItheumDataPackAndDataNFTContractsTx = await dataDex.setItheumDataPackAndDataNFT(dataPackAddress, dataNFTAddress);
+      await setItheumDataPackAndDataNFTContractsTx.wait();
+
       // addr2 mints and is therefore owner
       const createDataNftTx = await dataNFT.connect(addr2).createDataNFT('https://127.0.0.1', 1000, 10, false);
       await createDataNftTx.wait();
@@ -175,6 +280,9 @@ describe("DataDex", async function () {
     });
 
     it("user (addr3) should be able to buy from other user (addr1), after this user has bought from other user (addr2)", async function () {
+      const setItheumDataPackAndDataNFTContractsTx = await dataDex.setItheumDataPackAndDataNFT(dataPackAddress, dataNFTAddress);
+      await setItheumDataPackAndDataNFTContractsTx.wait();
+
       // addr2 mints and is therefore owner
       const createDataNftTx = await dataNFT.connect(addr2).createDataNFT('https://127.0.0.1', 1000, 10, false);
       await createDataNftTx.wait();
@@ -250,10 +358,16 @@ describe("DataDex", async function () {
     });
 
     it("should revert when trying to buy a non existing dataNFT", async function () {
+      const setItheumDataPackAndDataNFTContractsTx = await dataDex.setItheumDataPackAndDataNFT(dataPackAddress, dataNFTAddress);
+      await setItheumDataPackAndDataNFTContractsTx.wait();
+
       await expect(dataDex.buyDataNFT(addr1.address, addr2.address, 1, 0)).to.be.revertedWith("ERC721: owner query for nonexistent token");
     });
 
     it("should revert when trying to buy dataNFT which is not transferable", async function () {
+      const setItheumDataPackAndDataNFTContractsTx = await dataDex.setItheumDataPackAndDataNFT(dataPackAddress, dataNFTAddress);
+      await setItheumDataPackAndDataNFTContractsTx.wait();
+
       const createDataNftTx = await dataNFT.createDataNFT('https://127.0.0.1', 1000, 10, false);
       await createDataNftTx.wait();
 
@@ -264,6 +378,9 @@ describe("DataDex", async function () {
     });
 
     it("should revert when too few tokens are owned", async function () {
+      const setItheumDataPackAndDataNFTContractsTx = await dataDex.setItheumDataPackAndDataNFT(dataPackAddress, dataNFTAddress);
+      await setItheumDataPackAndDataNFTContractsTx.wait();
+
       const createDataNftTx = await dataNFT.createDataNFT('https://127.0.0.1', 1000, 10, false);
       await createDataNftTx.wait();
 
@@ -275,10 +392,13 @@ describe("DataDex", async function () {
       const approveTx = await itheumToken.connect(addr1).approve(dataDexAddress, 1100);
       await approveTx.wait();
 
-      await expect(dataDex.connect(addr1).buyDataNFT(owner.address, addr1.address, 1, 0)).to.be.revertedWith("You don't have sufficient ITHEUM to proceed");
+      await expect(dataDex.connect(addr1).buyDataNFT(owner.address, addr1.address, 1, 0)).to.be.revertedWith("Either you  have insufficient ITHEUM to proceed or allowance in ITHEUM contract is too low");
     });
 
     it("should revert when enough tokens are owned but to less allowance is set", async function () {
+      const setItheumDataPackAndDataNFTContractsTx = await dataDex.setItheumDataPackAndDataNFT(dataPackAddress, dataNFTAddress);
+      await setItheumDataPackAndDataNFTContractsTx.wait();
+
       const createDataNftTx = await dataNFT.createDataNFT('https://127.0.0.1', 1000, 10, false);
       await createDataNftTx.wait();
 
@@ -290,14 +410,48 @@ describe("DataDex", async function () {
       const approveTx = await itheumToken.connect(addr1).approve(dataDexAddress, 1000);
       await approveTx.wait();
 
-      await expect(dataDex.connect(addr1).buyDataNFT(owner.address, addr1.address, 1, 0)).to.be.revertedWith("Allowance in ITHEUM contract is too low");
+      await expect(dataDex.connect(addr1).buyDataNFT(owner.address, addr1.address, 1, 0)).to.be.revertedWith("Either you  have insufficient ITHEUM to proceed or allowance in ITHEUM contract is too low");
     });
 
     it("should revert when from address is not the owner of the provided token id", async function () {
+      const setItheumDataPackAndDataNFTContractsTx = await dataDex.setItheumDataPackAndDataNFT(dataPackAddress, dataNFTAddress);
+      await setItheumDataPackAndDataNFTContractsTx.wait();
+
       const createDataNftTx = await dataNFT.createDataNFT('https://127.0.0.1', 1000, 10, false);
       await createDataNftTx.wait();
 
       await expect(dataDex.connect(addr1).buyDataNFT(addr2.address, addr1.address, 1, 0)).to.be.revertedWith("'from' and 'ownerOf(tokenId)' doesn't match");
+    });
+
+    it("user should not be able to buy dataNFT when dataDex is paused", async function () {
+      const pauseDexTx = await dataDex.pause();
+      await pauseDexTx.wait();
+
+      const setItheumDataPackAndDataNFTContractsTx = await dataDex.setItheumDataPackAndDataNFT(dataPackAddress, dataNFTAddress);
+      await setItheumDataPackAndDataNFTContractsTx.wait();
+
+      // addr2 mints and is therefore owner
+      const createDataNftTx = await dataNFT.connect(addr2).createDataNFT('https://127.0.0.1', 1000, 10, false);
+      await createDataNftTx.wait();
+
+      expect(await dataNFT.ownerOf(1)).to.be.equal(addr2.address);
+
+      // no addr has $ITHEUM
+      expect(await itheumToken.balanceOf(addr1.address)).to.be.equal(0);
+      expect(await itheumToken.balanceOf(addr2.address)).to.be.equal(0);
+      expect(await itheumToken.balanceOf('0xE54FfbD968f803a704e74b983bF448F2C76902a6')).to.be.equal(0);
+
+      // addr1 claims $ITHEUM
+      const faucetTx = await itheumToken.connect(addr1).faucet(addr1.address, 1120);
+      faucetTx.wait();
+
+      expect(await itheumToken.balanceOf(addr1.address)).to.be.equal(1120);
+
+      // addr1 approves dataNFT contract to transfer funds on his behalf
+      const approveTx = await itheumToken.connect(addr1).approve(dataDexAddress, 1120);
+      await approveTx.wait();
+
+      await expect(dataDex.connect(addr1).buyDataNFT(addr2.address, addr1.address, 1, 0)).to.be.revertedWith("Pausable: paused");
     });
   });
 });

@@ -68,6 +68,14 @@ contract DataDex is Ownable, Pausable {
         return true;
     }
 
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+
     function setBuyerAndSellerFeeInPercent(uint8 _buyerFee, uint8 _sellerFee) external onlyOwner returns(bool) {
         require(_buyerFee < 11, "Maximum buyer fee is 10%");
         require(_sellerFee < 11, "Maximum seller fee is 10%");
@@ -78,7 +86,7 @@ contract DataDex is Ownable, Pausable {
         return true;
     }
 
-    function buyDataPack(address _from, address _to, string calldata _dataPackId) external whenItheumDataPackIsSet {
+    function buyDataPack(address _from, address _to, string calldata _dataPackId) external whenItheumDataPackIsSet whenNotPaused {
         require(!itheumDataPack.checkAccess(_dataPackId), "You already have bought this dataPack");
 
         address dataPackFeeTreasury = itheumToken.dataPackFeeTreasury();
@@ -93,13 +101,8 @@ contract DataDex is Ownable, Pausable {
 
         (uint256 sellerFee, uint256 buyerFee) = getSellerAndBuyerFee(priceInItheum);
 
-        // check the balance of $ITHEUM for buyer
-        uint256 itheumOfBuyer = itheumToken.balanceOf(msg.sender);
-        require(itheumOfBuyer >= priceInItheum + buyerFee, "You don't have sufficient ITHEUM to proceed");
-
-        // check the allowance of $ITHEUM for this contract to spend from buyer
-        uint256 allowance = itheumToken.allowance(msg.sender, address(this));
-        require(allowance >= priceInItheum + buyerFee, "Allowance in ITHEUM contract is too low");
+        require(balanceAndAllowanceCheck(msg.sender, priceInItheum + buyerFee),
+            "Either you  have insufficient ITHEUM to proceed or allowance in ITHEUM contract is too low");
 
         // transfer $ITHEUM to data pack fee treasury and to seller
         itheumToken.transferFrom(msg.sender, seller, priceInItheum - sellerFee);
@@ -108,7 +111,7 @@ contract DataDex is Ownable, Pausable {
         itheumDataPack.buyDataPack(_dataPackId, _to, priceInItheum + buyerFee);
     }
 
-    function buyDataNFT(address _from, address _to, uint256 _tokenId, bytes memory _data) external whenItheumDataNFTIsSet {
+    function buyDataNFT(address _from, address _to, uint256 _tokenId, bytes memory _data) external whenItheumDataNFTIsSet whenNotPaused {
         require(itheumDataNFT.ownerOf(_tokenId) == _from, "'from' and 'ownerOf(tokenId)' doesn't match");
 
         address dataNFTFeeTreasury = itheumToken.dataNFTFeeTreasury();
@@ -125,15 +128,10 @@ contract DataDex is Ownable, Pausable {
 
         (uint256 sellerFee, uint256 buyerFee) = getSellerAndBuyerFee(priceInItheum);
 
-        // check the balance of $ITHEUM for buyer
-        uint256 balance = itheumToken.balanceOf(msg.sender);
-        require(balance >= priceInItheum + royaltyInItheum + buyerFee, "You don't have sufficient ITHEUM to proceed");
+        require(balanceAndAllowanceCheck(msg.sender, priceInItheum + royaltyInItheum + buyerFee),
+            "Either you  have insufficient ITHEUM to proceed or allowance in ITHEUM contract is too low");
 
-        // check the allowance of $ITHEUM for this contract to spend from buyer
-        uint256 allowance = itheumToken.allowance(msg.sender, address(this));
-        require(allowance >= priceInItheum + royaltyInItheum + buyerFee, "Allowance in ITHEUM contract is too low");
-
-        // transfer $ITHEUM to data nft fee treasury, owner and to creator
+        // transfer $ITHEUM to data nft fee treasury, to owner and to creator
         itheumToken.transferFrom(msg.sender, dataNFTFeeTreasury, sellerFee + buyerFee);
         itheumToken.transferFrom(msg.sender, _from, priceInItheum - sellerFee);
         itheumToken.transferFrom(msg.sender, dataNFT.creator, royaltyInItheum);
@@ -144,5 +142,19 @@ contract DataDex is Ownable, Pausable {
     function getSellerAndBuyerFee(uint256 _priceInItheum) view internal returns(uint256 sellerFee, uint256 buyerFee) {
         sellerFee = _priceInItheum * sellerFeeInPercent / 100;
         buyerFee = _priceInItheum * buyerFeeInPercent / 100;
+    }
+
+    function balanceAndAllowanceCheck(address buyer, uint256 amount) view internal returns(bool) {
+        // check the balance of $ITHEUM for buyer
+        if (itheumToken.balanceOf(buyer) < amount) {
+            return false;
+        }
+
+        // check the allowance of $ITHEUM for this contract to spend from buyer
+        if (itheumToken.allowance(msg.sender, address(this)) < amount) {
+            return false;
+        }
+
+        return true;
     }
 }
