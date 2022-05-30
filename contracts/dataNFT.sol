@@ -59,7 +59,7 @@ contract ItheumDataNFT is ERC721 {
 
         // when a mint takes place, this contract must be allowed
         // to transfer the dataNFT on the owners behalf
-        approve(address(this), newNFTId);
+        approve(address(dataDex), newNFTId);
 
         emit DataNFTCreated(newNFTId, msg.sender, _royaltyInPercent);
 
@@ -76,14 +76,14 @@ contract ItheumDataNFT is ERC721 {
     }
 
     function setDataNFTTransferable(uint256 _tokenId, bool _transferable) public returns (bool) {
-        require(ownerOf(_tokenId) == msg.sender, "Only owner can set transferable");
+        require(ownerOf(_tokenId) == tx.origin, "Only owner can set transferable");
 
         _dataNFTs[_tokenId].transferable = _transferable;
 
         // in case transferable is true, this contract must be allowed to transfer the dataNFT
         // on the owners behalf; in other case reset approval by setting to address zero
-        address addressToApprove = _transferable ? address(this) : address(0);
-        approve(addressToApprove, _tokenId);
+        address addressToApprove = _transferable ? address(dataDex) : address(0);
+        _approve(addressToApprove, _tokenId);
 
         return true;
     }

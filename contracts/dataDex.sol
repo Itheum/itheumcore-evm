@@ -12,12 +12,22 @@ import "./SharedStructs.sol";
 
 contract DataDex is Ownable, Pausable {
 
-    uint8 public BUYER_FEE_IN_PERCENT = 2;
-    uint8 public SELLER_FEE_IN_PERCENT = 2;
+    uint8 public buyerFeeInPercent = 2;
+    uint8 public sellerFeeInPercent = 2;
 
     ItheumToken public itheumToken;
     ItheumDataPack public itheumDataPack;
     ItheumDataNFT public itheumDataNFT;
+
+    modifier whenItheumDataPackIsSet() {
+        require(address(itheumDataPack) != address(0), 'ItheumDataPack contract must be set first');
+        _;
+    }
+
+    modifier whenItheumDataNFTIsSet() {
+        require(address(itheumDataNFT) != address(0), 'ItheumDataNFT contract must be set first');
+        _;
+    }
 
     constructor(ItheumToken _itheumToken) {
         itheumToken = _itheumToken;
@@ -25,15 +35,50 @@ contract DataDex is Ownable, Pausable {
 
     function setItheumDataNFT(ItheumDataNFT _itheumDataNFT) external onlyOwner returns(bool) {
         itheumDataNFT = _itheumDataNFT;
+
         return true;
     }
 
     function setItheumDataPack(ItheumDataPack _itheumDataPack) external onlyOwner returns(bool) {
         itheumDataPack = _itheumDataPack;
+
         return true;
     }
 
-    function buyDataPack(address _from, address _to, string calldata _dataPackId) external {
+    function setItheumDataPackAndDataNFT(ItheumDataPack _itheumDataPack, ItheumDataNFT _itheumDataNFT) external onlyOwner returns(bool) {
+        itheumDataPack = _itheumDataPack;
+        itheumDataNFT = _itheumDataNFT;
+
+        return true;
+    }
+
+    function setBuyerFeeInPercent(uint8 _buyerFee) external onlyOwner returns(bool) {
+        require(_buyerFee < 11, "Maximum buyer fee is 10%");
+
+        buyerFeeInPercent = _buyerFee;
+
+        return true;
+    }
+
+    function setSellerFeeInPercent(uint8 _sellerFee) external onlyOwner returns(bool) {
+        require(_sellerFee < 11, "Maximum seller fee is 10%");
+
+        sellerFeeInPercent = _sellerFee;
+
+        return true;
+    }
+
+    function setBuyerAndSellerFeeInPercent(uint8 _buyerFee, uint8 _sellerFee) external onlyOwner returns(bool) {
+        require(_buyerFee < 11, "Maximum buyer fee is 10%");
+        require(_sellerFee < 11, "Maximum seller fee is 10%");
+
+        buyerFeeInPercent = _buyerFee;
+        sellerFeeInPercent = _sellerFee;
+
+        return true;
+    }
+
+    function buyDataPack(address _from, address _to, string calldata _dataPackId) external whenItheumDataPackIsSet {
         require(!itheumDataPack.checkAccess(_dataPackId), "You already have bought this dataPack");
 
         address dataPackFeeTreasury = itheumToken.dataPackFeeTreasury();
@@ -63,7 +108,7 @@ contract DataDex is Ownable, Pausable {
         itheumDataPack.buyDataPack(_dataPackId, _to, priceInItheum + buyerFee);
     }
 
-    function buyDataNFT(address _from, address _to, uint256 _tokenId, bytes memory _data) external {
+    function buyDataNFT(address _from, address _to, uint256 _tokenId, bytes memory _data) external whenItheumDataNFTIsSet {
         require(itheumDataNFT.ownerOf(_tokenId) == _from, "'from' and 'ownerOf(tokenId)' doesn't match");
 
         address dataNFTFeeTreasury = itheumToken.dataNFTFeeTreasury();
@@ -97,7 +142,7 @@ contract DataDex is Ownable, Pausable {
     }
 
     function getSellerAndBuyerFee(uint256 _priceInItheum) view internal returns(uint256 sellerFee, uint256 buyerFee) {
-        sellerFee = _priceInItheum * SELLER_FEE_IN_PERCENT / 100;
-        buyerFee = _priceInItheum * BUYER_FEE_IN_PERCENT / 100;
+        sellerFee = _priceInItheum * sellerFeeInPercent / 100;
+        buyerFee = _priceInItheum * buyerFeeInPercent / 100;
     }
 }
