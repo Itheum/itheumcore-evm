@@ -13,9 +13,9 @@ pub trait ClaimsContract:
     storage::StorageModule + events::EventsModule + views::ViewsModule
 {
     #[init]
-    fn init(&self, token: &TokenIdentifier) {
+    fn init(&self, token: TokenIdentifier) {
         self.is_paused().set(true);
-        self.reward_token().set(token);
+        self.reward_token().set(&token);
     }
 
     #[only_owner]

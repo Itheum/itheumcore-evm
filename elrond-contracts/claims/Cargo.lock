@@ -82,7 +82,9 @@ version = "0.0.0"
 dependencies = [
  "elrond-wasm",
  "elrond-wasm-debug",
+ "hex",
  "num-bigint",
+ "num-traits",
 ]
 
 [[package]]
