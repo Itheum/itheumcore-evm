@@ -3,15 +3,15 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 
 import "./dataDex.sol";
 import "./SharedStructs.sol";
 
 contract ItheumDataNFT is Initializable, ERC721Upgradeable {
     
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
+    using CountersUpgradeable for CountersUpgradeable.Counter;
+    CountersUpgradeable.Counter private _tokenIds;
 
     event DataNFTCreated(uint256 indexed _tokenId, address indexed _creator, uint8 indexed _royaltyInPercent);
     event DataNFTTraded(uint256 indexed _tokenId, address indexed _from, address indexed _to, uint256 _priceInItheum, address _creator, uint256 _royaltyInItheum);
