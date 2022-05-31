@@ -40,6 +40,14 @@ contract DataDex is Initializable, OwnableUpgradeable, PausableUpgradeable {
         sellerFeeInPercent = 2;
     }
 
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+
     function setItheumDataNFT(ItheumDataNFT _itheumDataNFT) external onlyOwner returns(bool) {
         itheumDataNFT = _itheumDataNFT;
 
@@ -73,14 +81,6 @@ contract DataDex is Initializable, OwnableUpgradeable, PausableUpgradeable {
         sellerFeeInPercent = _sellerFee;
 
         return true;
-    }
-
-    function pause() external onlyOwner {
-        _pause();
-    }
-
-    function unpause() external onlyOwner {
-        _unpause();
     }
 
     function setBuyerAndSellerFeeInPercent(uint8 _buyerFee, uint8 _sellerFee) external onlyOwner returns(bool) {
