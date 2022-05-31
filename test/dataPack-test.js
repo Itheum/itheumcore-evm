@@ -9,11 +9,15 @@ describe("DataPack", async function () {
     itheumTokenAddress = (await itheumToken.deployed()).address;
 
     DataDex = await ethers.getContractFactory("DataDex");
-    dataDex = await DataDex.deploy(itheumTokenAddress);
+    dataDex = await upgrades.deployProxy(DataDex, [itheumTokenAddress], {
+      initializer: "initialize",
+    });
     dataDexAddress = (await dataDex.deployed()).address;
 
     DataPack = await ethers.getContractFactory("ItheumDataPack");
-    dataPack = await DataPack.deploy(dataDexAddress);
+    dataPack = await upgrades.deployProxy(DataPack, [dataDexAddress], {
+      initializer: "initialize",
+    });
     dataPackAddress = (await dataPack.deployed()).address;
   });
 

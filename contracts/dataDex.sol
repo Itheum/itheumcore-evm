@@ -1,8 +1,9 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 import "./ItheumToken.sol";
 import "./dataPack.sol";
@@ -10,10 +11,10 @@ import "./dataNFT.sol";
 import "./SharedStructs.sol";
 
 
-contract DataDex is Ownable, Pausable {
+contract DataDex is Initializable, OwnableUpgradeable, PausableUpgradeable {
 
-    uint8 public buyerFeeInPercent = 2;
-    uint8 public sellerFeeInPercent = 2;
+    uint8 public buyerFeeInPercent;
+    uint8 public sellerFeeInPercent;
 
     ItheumToken public itheumToken;
     ItheumDataPack public itheumDataPack;
@@ -29,8 +30,14 @@ contract DataDex is Ownable, Pausable {
         _;
     }
 
-    constructor(ItheumToken _itheumToken) {
+    function initialize(ItheumToken _itheumToken) public initializer {
+        __Ownable_init();
+        __Pausable_init();
+
         itheumToken = _itheumToken;
+
+        buyerFeeInPercent = 2;
+        sellerFeeInPercent = 2;
     }
 
     function setItheumDataNFT(ItheumDataNFT _itheumDataNFT) external onlyOwner returns(bool) {

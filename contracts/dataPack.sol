@@ -1,16 +1,15 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+
 import "./dataDex.sol";
 import "./SharedStructs.sol";
 
-contract ItheumDataPack {
+contract ItheumDataPack is Initializable {
 
     event AdvertiseEvent(string indexed dataPackId, address indexed seller, uint256 priceInItheum);
     event PurchaseEvent(string indexed dataPackId, address indexed buyer, address indexed seller, uint256 priceInItheum);
-
-    uint8 public BUYER_FEE_IN_PERCENT = 2;
-    uint8 public SELLER_FEE_IN_PERCENT = 2;
 
     DataDex public dataDex;
 
@@ -30,7 +29,7 @@ contract ItheumDataPack {
         _;
     }
 
-    constructor(DataDex _dataDex) {
+    function initialize(DataDex _dataDex) public initializer {
         dataDex = _dataDex;
     }
     

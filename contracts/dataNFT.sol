@@ -1,13 +1,14 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "./dataDex.sol";
 import "./SharedStructs.sol";
 
-contract ItheumDataNFT is ERC721 {
+contract ItheumDataNFT is Initializable, ERC721Upgradeable {
     
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
@@ -22,7 +23,9 @@ contract ItheumDataNFT is ERC721 {
         _;
     }
 
-    constructor(DataDex _dataDex) ERC721("Itheum Data NFT", "DAFT") {
+    function initialize(DataDex _dataDex) public initializer {
+        __ERC721_init("Itheum Data NFT", "DAFT");
+
         dataDex = _dataDex;
     }
 

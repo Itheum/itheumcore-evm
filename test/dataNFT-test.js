@@ -9,11 +9,15 @@ describe("ItheumDataNFT", async function () {
     itheumTokenAddress = (await itheumToken.deployed()).address;
 
     DataDex = await ethers.getContractFactory("DataDex");
-    dataDex = await DataDex.deploy(itheumTokenAddress);
+    dataDex = await upgrades.deployProxy(DataDex, [itheumTokenAddress], {
+      initializer: "initialize",
+    });
     dataDexAddress = (await dataDex.deployed()).address;
 
     DataNFT = await ethers.getContractFactory("ItheumDataNFT");
-    dataNFT = await DataNFT.deploy(dataDexAddress);
+    dataNFT = await upgrades.deployProxy(DataNFT, [dataDexAddress], {
+      initializer: "initialize",
+    });
     dataNFTAddress = (await dataNFT.deployed()).address;
   });
 
