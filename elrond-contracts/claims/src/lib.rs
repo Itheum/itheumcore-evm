@@ -58,6 +58,7 @@ pub trait ClaimsContract:
     fn harvest_claim(&self, claim_type: OptionalValue<ClaimType>) {
         let reward_token = self.reward_token().get();
         let caller = self.blockchain().get_caller();
+        require!(!self.is_paused().get(), "Contract is paused");
         if let OptionalValue::Some(what_type_to_claim) = claim_type {
             let claim = self.claim(&caller, &what_type_to_claim).get();
             require!(claim > BigUint::zero(), "Cannot claim 0 tokens");
