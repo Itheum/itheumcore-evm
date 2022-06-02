@@ -1,12 +1,7 @@
 use claims::*;
-use elrond_wasm::{
-    elrond_codec::multi_types::OptionalValue,
-    sc_error,
-    types::{Address, SCResult},
-};
+use elrond_wasm::{elrond_codec::multi_types::OptionalValue, types::Address};
 use elrond_wasm_debug::{
-    managed_address, managed_biguint, managed_token_id, rust_biguint, testing_framework::*,
-    DebugApi,
+    managed_address, managed_token_id, rust_biguint, testing_framework::*, DebugApi,
 };
 pub const WASM_PATH: &'static str = "../output/claims.wasm";
 pub const TOKEN_ID: &[u8] = b"ITHEUM-df6f26";

@@ -8,9 +8,11 @@ elrond_wasm_node::wasm_endpoints! {
     claims
     (
         addClaim
+        addClaims
         claim
         isPaused
         removeClaim
+        removeClaims
         viewClaim
         viewClaims
         viewTokenIdentifier

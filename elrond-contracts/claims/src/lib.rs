@@ -39,6 +39,37 @@ pub trait ClaimsContract:
     }
 
     #[only_owner]
+    #[payable("*")]
+    #[endpoint(addClaims)]
+    fn add_claims(
+        &self,
+        claims: MultiValueEncoded<MultiValue3<ManagedAddress, ClaimType, BigUint>>,
+    ) {
+        let (payment_amount, payment_token) = self.call_value().payment_token_pair();
+        let reward_token = self.reward_token().get();
+        require!(
+            payment_token == reward_token,
+            "Can only add designated token"
+        );
+        require!(
+            payment_amount > BigUint::zero(),
+            "Must add more than 0 tokens"
+        );
+        let mut sum_of_claims = BigUint::zero();
+        for item in claims.into_iter() {
+            let tuple = item.into_tuple();
+            let current_claim = self.claim(&tuple.0, &tuple.1).get();
+            self.claim(&tuple.0, &tuple.1).set(current_claim + &tuple.2);
+            sum_of_claims += &tuple.2;
+            self.claim_added_event(&tuple.0, &tuple.1, tuple.2);
+        }
+        require!(
+            sum_of_claims == payment_amount,
+            "Claims added must equal payment amount"
+        );
+    }
+
+    #[only_owner]
     #[endpoint(removeClaim)]
     fn remove_claim(&self, address: &ManagedAddress, claim_type: ClaimType, amount: BigUint) {
         let current_claim = self.claim(address, &claim_type).get();
@@ -52,6 +83,34 @@ pub trait ClaimsContract:
             .set(current_claim - &amount);
         self.send().direct(&owner, &reward_token, 0, &amount, &[]);
         self.claim_removed_event(address, &claim_type, amount);
+    }
+
+    #[only_owner]
+    #[endpoint(removeClaims)]
+    fn remove_claims(
+        &self,
+        claims: MultiValueEncoded<MultiValue3<ManagedAddress, ClaimType, BigUint>>,
+    ) {
+        let mut sum_of_claims = BigUint::zero();
+        for item in claims.into_iter() {
+            let tuple = item.into_tuple();
+            let current_claim = self.claim(&tuple.0, &tuple.1).get();
+            require!(
+                current_claim >= tuple.2,
+                "Cannot remove more than current claim"
+            );
+            sum_of_claims += &tuple.2;
+            self.claim(&tuple.0, &tuple.1).set(current_claim - &tuple.2);
+            self.claim_removed_event(&tuple.0, &tuple.1, tuple.2);
+        }
+        require!(
+            sum_of_claims > BigUint::zero(),
+            "Claims removed must be greater than 0"
+        );
+        let owner = self.blockchain().get_owner_address();
+        let reward_token = self.reward_token().get();
+        self.send()
+            .direct(&owner, &reward_token, 0, &sum_of_claims, &[]);
     }
 
     #[endpoint(claim)]
