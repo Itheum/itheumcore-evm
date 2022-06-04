@@ -1,7 +1,11 @@
 use claims::*;
-use elrond_wasm::{elrond_codec::multi_types::OptionalValue, types::Address};
+use elrond_wasm::{
+    elrond_codec::multi_types::{MultiValue3, OptionalValue},
+    types::{Address, MultiValueEncoded},
+};
 use elrond_wasm_debug::{
-    managed_address, managed_token_id, rust_biguint, testing_framework::*, DebugApi,
+    managed_address, managed_biguint, managed_token_id, rust_biguint, testing_framework::*,
+    DebugApi,
 };
 pub const WASM_PATH: &'static str = "../output/claims.wasm";
 pub const TOKEN_ID: &[u8] = b"ITHEUM-df6f26";
@@ -75,7 +79,7 @@ fn deploy_test() {
 }
 
 #[test]
-fn add_claim_test() {
+fn add_and_remove_claim_test() {
     let mut setup = setup_contract(claims::contract_obj);
     let b_wrapper = &mut setup.blockchain_wrapper;
     let owner_address = &setup.owner_address;
@@ -93,6 +97,135 @@ fn add_claim_test() {
             },
         )
         .assert_ok();
+    b_wrapper
+        .execute_esdt_transfer(
+            owner_address,
+            &setup.contract_wrapper,
+            TOKEN_ID,
+            0,
+            &rust_biguint!(0),
+            |sc| {
+                sc.remove_claim(
+                    &managed_address!(user_addr),
+                    storage::ClaimType::Airdrop,
+                    managed_biguint!(500_000),
+                );
+            },
+        )
+        .assert_ok();
+    b_wrapper
+        .execute_esdt_transfer(
+            owner_address,
+            &setup.contract_wrapper,
+            TOKEN_ID,
+            0,
+            &rust_biguint!(0),
+            |sc| {
+                sc.remove_claim(
+                    &managed_address!(user_addr),
+                    storage::ClaimType::Airdrop,
+                    managed_biguint!(700_000),
+                );
+            },
+        )
+        .assert_user_error("Cannot remove more than current claims");
+}
+
+#[test]
+fn add_and_remove_claims_test() {
+    let mut setup = setup_contract(claims::contract_obj);
+    let b_wrapper = &mut setup.blockchain_wrapper;
+    let owner_address = &setup.owner_address;
+    let first_user_addr = &setup.first_user_address;
+    let second_user_addr = &setup.second_user_address;
+
+    b_wrapper
+        .execute_esdt_transfer(
+            owner_address,
+            &setup.contract_wrapper,
+            TOKEN_ID,
+            0,
+            &rust_biguint!(2_000_000),
+            |sc| {
+                let mut args = MultiValueEncoded::new();
+                args.push(MultiValue3(
+                    (
+                        managed_address!(first_user_addr),
+                        storage::ClaimType::Airdrop,
+                        managed_biguint!(1_000_000),
+                    )
+                        .into(),
+                ));
+                args.push(MultiValue3(
+                    (
+                        managed_address!(second_user_addr),
+                        storage::ClaimType::Allocation,
+                        managed_biguint!(1_000_000),
+                    )
+                        .into(),
+                ));
+                sc.add_claims(args);
+            },
+        )
+        .assert_ok();
+    b_wrapper
+        .execute_esdt_transfer(
+            owner_address,
+            &setup.contract_wrapper,
+            TOKEN_ID,
+            0,
+            &rust_biguint!(0),
+            |sc| {
+                let mut args = MultiValueEncoded::new();
+                args.push(MultiValue3(
+                    (
+                        managed_address!(first_user_addr),
+                        storage::ClaimType::Airdrop,
+                        managed_biguint!(1_000_000),
+                    )
+                        .into(),
+                ));
+                args.push(MultiValue3(
+                    (
+                        managed_address!(second_user_addr),
+                        storage::ClaimType::Allocation,
+                        managed_biguint!(500_000),
+                    )
+                        .into(),
+                ));
+                sc.remove_claims(args);
+            },
+        )
+        .assert_ok();
+    b_wrapper
+        .execute_esdt_transfer(
+            owner_address,
+            &setup.contract_wrapper,
+            TOKEN_ID,
+            0,
+            &rust_biguint!(0),
+            |sc| {
+                let mut args = MultiValueEncoded::new();
+                args.push(MultiValue3(
+                    (
+                        managed_address!(first_user_addr),
+                        storage::ClaimType::Airdrop,
+                        managed_biguint!(300_000),
+                    )
+                        .into(),
+                ));
+                args.push(MultiValue3(
+                    (
+                        managed_address!(second_user_addr),
+                        storage::ClaimType::Allocation,
+                        managed_biguint!(500_000),
+                    )
+                        .into(),
+                ));
+                sc.remove_claims(args);
+            },
+        )
+        .assert_user_error("Cannot remove more than current claim");
 }
 
 #[test]
