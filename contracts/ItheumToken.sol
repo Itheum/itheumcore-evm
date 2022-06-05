@@ -8,6 +8,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract ItheumToken is ERC20, ERC20Burnable, Ownable {
     
     mapping(address => uint256) public faucetLastUsed;
+
+    address public dataPackFeeTreasury;
     
     constructor() ERC20("Itheum Token", "ITHEUM") {
         _mint(msg.sender, 1000000000 * 10 ** decimals());
@@ -16,14 +18,22 @@ contract ItheumToken is ERC20, ERC20Burnable, Ownable {
     function mint(address to, uint256 amount) public onlyOwner {
         _mint(to, amount);
     }
+
+    function setDataPackFeeTreasury(address _address) external onlyOwner returns(bool) {
+        require(_address != address(0), "Address zero not allowed");
+
+        dataPackFeeTreasury = _address;
+
+        return true;
+    }
     
-     function faucet(address recipient, uint256 amount) external returns(bool) {
-         require(block.timestamp - faucetLastUsed[recipient] > 10, "You need to wait 10 seconds to use again");
-         
+    function faucet(address recipient, uint256 amount) external returns(bool) {
+        require(block.timestamp - faucetLastUsed[recipient] > 10, "You need to wait 10 seconds to use again");
+
         faucetLastUsed[recipient] = block.timestamp;
-        
+
         _mint(recipient, amount);
-        
+
         return true;
     }
 }

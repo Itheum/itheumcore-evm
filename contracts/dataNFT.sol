@@ -122,6 +122,10 @@ contract ItheumDataNFT is ERC721 {
         uint256 priceInItheum = dataNFT.priceInItheum;
         uint256 royaltyInItheum = priceInItheum * dataNFT.royaltyInPercent / 100;
 
+        // check the balance of $ITHEUM for buyer
+        uint256 balance = itheumToken.balanceOf(_to);
+        require(balance >= priceInItheum + royaltyInItheum, "You don't have sufficient ITHEUM to proceed");
+
         // check the allowance of $ITHEUM for this contract to spend from buyer
         uint256 allowance = itheumToken.allowance(_to, address(this));
         require(allowance >= priceInItheum + royaltyInItheum, "Allowance in ITHEUM contract is too low");
