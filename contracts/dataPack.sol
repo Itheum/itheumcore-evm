@@ -1,25 +1,19 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "./ItheumToken.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract ItheumDataPack {
+import "./dataDex.sol";
+import "./SharedStructs.sol";
+
+contract ItheumDataPack is Initializable {
 
     event AdvertiseEvent(string indexed dataPackId, address indexed seller, uint256 priceInItheum);
-    event PurchaseEvent(string indexed dataPackId, address indexed buyer, address indexed seller, uint256 feeInItheum);
-    
-    struct DataPack {
-        address seller;
-        bytes32 dataHash;
-        uint256 priceInItheum;
-    }
+    event PurchaseEvent(string indexed dataPackId, address indexed buyer, address indexed seller, uint256 priceInItheum);
 
-    uint8 public BUYER_FEE_IN_PERCENT = 2;
-    uint8 public SELLER_FEE_IN_PERCENT = 2;
+    DataDex public dataDex;
 
-    ItheumToken public itheumToken;
-
-    mapping(string => DataPack) public dataPacks;
+    mapping(string => SharedStructs.DataPack) public dataPacks;
     
     // dataPackId => address => access
     mapping(string => mapping(address => bool)) private accessAllocations;
@@ -29,9 +23,14 @@ contract ItheumDataPack {
     // in web2, the dataPackId can link to a web2 storage of related meta (programId + program onbaording link etc)
     // ... this is not an issue, as if web2 was compromised in the end we will compare the result to the dataHash for integrity of the proof
     mapping(address => mapping(string => bytes32)) public personalDataProofs;
-    
-    constructor(ItheumToken _itheumToken) {
-        itheumToken = _itheumToken;
+
+    modifier onlyDataDex() {
+        require(msg.sender == address(dataDex), 'Trades are only possible via DataDex');
+        _;
+    }
+
+    function initialize(DataDex _dataDex) public initializer {
+        dataDex = _dataDex;
     }
     
     // Data Owner advertising a data pack for sale
@@ -42,7 +41,7 @@ contract ItheumDataPack {
 
         bytes32 dataHash = stringToBytes32(_dataHashStr);
         
-        dataPacks[_dataPackId] = DataPack({
+        dataPacks[_dataPackId] = SharedStructs.DataPack({
             seller: msg.sender,
             dataHash: dataHash,
             priceInItheum: _priceInItheum
@@ -55,34 +54,11 @@ contract ItheumDataPack {
     }
     
     // A buyer, buying access to a advertised data pack
-    function buyDataPack(string calldata _dataPackId) external {
-        require(!checkAccess(_dataPackId), "You already have bought this dataPack");
-
-        address dataPackFeeTreasury = itheumToken.dataPackFeeTreasury();
-
-        require(dataPackFeeTreasury != address(0), "Itheum treasury address isn't set");
-
-        DataPack memory dataPack = dataPacks[_dataPackId];
-
-        require(dataPack.seller != address(0), "You can't buy a non-existing data pack");
-
-        uint256 itheumOfBuyer = itheumToken.balanceOf(msg.sender);
-
-        uint256 sellerFee = dataPack.priceInItheum * SELLER_FEE_IN_PERCENT / 100;
-        uint256 buyerFee = dataPack.priceInItheum * BUYER_FEE_IN_PERCENT / 100;
-
-        require(itheumOfBuyer >= dataPack.priceInItheum + buyerFee, "You dont have sufficient ITHEUM to proceed");
-        
-        uint256 allowance = itheumToken.allowance(msg.sender, address(this));
-        require(allowance >= dataPack.priceInItheum + buyerFee, "Check the token allowance");
-        
-        itheumToken.transferFrom(msg.sender, dataPack.seller, dataPack.priceInItheum - sellerFee);
-        itheumToken.transferFrom(msg.sender, dataPackFeeTreasury, sellerFee + buyerFee);
-
-        accessAllocations[_dataPackId][msg.sender] = true;
+    function buyDataPack(string calldata _dataPackId, address _buyer, uint256 _priceInItheum) external onlyDataDex {
+        accessAllocations[_dataPackId][_buyer] = true;
         accessAllocationCount[_dataPackId]++;
 
-        emit PurchaseEvent(_dataPackId, msg.sender, dataPack.seller, buyerFee + sellerFee);
+        emit PurchaseEvent(_dataPackId, _buyer, dataPacks[_dataPackId].seller, _priceInItheum);
     }
     
     // Verifies on-chain hash with off-chain hash as part of datapack purchase or to verify PDP

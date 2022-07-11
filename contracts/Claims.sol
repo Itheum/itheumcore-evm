@@ -39,7 +39,7 @@ contract Claims is Initializable, OwnableUpgradeable, PausableUpgradeable, Reent
     }
 
     modifier noAddressZero(address _address) {
-        require(_address != address(0x0), 'No deposits for 0x0 possible');
+        require(_address != address(0x0), 'Address zero not allowed');
         _;
     }
 

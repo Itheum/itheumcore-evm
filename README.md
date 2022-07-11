@@ -1,5 +1,5 @@
-# Itheum Core
-The core itheum technology repository; it hv0.1.0s smart contracts, chain dev kits, unit tests etc.
+# Itheum Core EVM
+The core Itheum multi-chain EVM technology repository; it has smart contracts, chain dev kits, unit tests etc.
 
 ![Itheum Core](https://raw.githubusercontent.com/Itheum/itheumcore/main/itheum-core-hero.png)
 
@@ -41,7 +41,7 @@ Contracts dev is via hardhat. Some useful commands:
 - can we auto deploy? read more here `https://hardhat.org/plugins/hardhat-watcher.html`
 
 ### Dev env
-- requires > node 12x
+- requires > node 16.x
 - Prior to running the local dev commands like `npx hardhat watch test` you need local env vars. Copy the `.env-template` file and rename to `.env` and update with your keys that will be used for deploying the contracts.
 
 ### EVM Cross-Chain Deployments

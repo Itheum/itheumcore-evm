@@ -105,7 +105,7 @@ describe("Claims", async function () {
 
   it("owner should not be able to deposit for address zero", async function () {
     await expect(claims.increaseDeposit('0x0000000000000000000000000000000000000000', 1, 500))
-      .to.be.revertedWith('No deposits for 0x0 possible');
+      .to.be.revertedWith('Address zero not allowed');
   });
 
   it("owner should not be able to decrease deposit too much", async function () {
