@@ -13,7 +13,7 @@ The repo uses lerna for better management of sub/mono repos. Here is how you use
 Contracts dev is via hardhat. Some useful commands:
 
 - `npx hardhat accounts`: Gives you your accounts
-- `npx hardhat compile`: Compiles all contracts in fv0.1.0er
+- `npx hardhat compile`: Compiles all contracts in folder
 - `npx hardhat test`: runs unit tests or use `npx hardhat watch test` to run in test watch mode
 - `npx hardhat watch tdd` to run in TDD watch mode (updating contracts and saving will compile all and run tests)
 
@@ -23,17 +23,17 @@ Contracts dev is via hardhat. Some useful commands:
 
 #### Deploying contract dev environment
 - first run the local chain; in a seperate terminal run `npx hardhat node` (this loads chain into localhost:8545)
-- Compile all contracts in fv0.1.0e via `npx hardhat compile`
+- Compile all contracts in folder via `npx hardhat compile`
 - deploy via `npx hardhat run scripts/itheumcore-script.js --network localhost`
 
 ### Deploying into testnet
-- Compile all contracts in fv0.1.0e via `npx hardhat compile`
+- Compile all contracts in folder via `npx hardhat compile`
 - deploy via `npx hardhat run scripts/itheumcore-script.js --network {testnet_code}`
 - The following `{testnet_code}`s are supported: `eth_rop_testnet`, `eth_rin_testnet` (not used yet) `pol_mum_testnet` `avalanche_testnet` `bsc_testnet` `harmony_testnet` `platon_testnet`, `parastate_testnet`
 
 ### Local environemnt dev requirements
 - If you are `Deploying into testnet` , it needs some ENV vars. You need to create a `.env` file and add the ENV vars are used in the `hardhat.config.js` file.
-- Each chain's private key will be in `[XXX]_TESTNET_KEY`, it's best practice to use a single dev usage wallet aross chains. So create a `dedicated wallet` then use it across all chains.
+- Each chain's private key will be in `[XXX]_TESTNET_KEY`, it's best practice to use a single dev usage wallet across chains. So create a `dedicated wallet` then use it across all chains (ask the core devs if there us a shared testnet wallet you can use).
 - Before you deploy your contracts into a chain, you need to make sure that the wallet used has funds in it for gas costs. In testnets, you can use the chain faucets to feed that wallet.
 
 ### using watcher (plugin for live builds)
