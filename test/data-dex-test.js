@@ -398,7 +398,7 @@ describe("DataDex", async function () {
       const approveTx = await itheumToken.connect(addr1).approve(dataDexAddress, 1100);
       await approveTx.wait();
 
-      await expect(dataDex.connect(addr1).buyDataNFT(owner.address, addr1.address, 1, 0)).to.be.revertedWith("Either you  have insufficient ITHEUM to proceed or allowance in ITHEUM contract is too low");
+      await expect(dataDex.connect(addr1).buyDataNFT(owner.address, addr1.address, 1, 0)).to.be.revertedWith("Either you have insufficient ITHEUM to proceed or allowance in ITHEUM contract is too low");
     });
 
     it("should revert when enough tokens are owned but to less allowance is set", async function () {
@@ -416,7 +416,7 @@ describe("DataDex", async function () {
       const approveTx = await itheumToken.connect(addr1).approve(dataDexAddress, 1000);
       await approveTx.wait();
 
-      await expect(dataDex.connect(addr1).buyDataNFT(owner.address, addr1.address, 1, 0)).to.be.revertedWith("Either you  have insufficient ITHEUM to proceed or allowance in ITHEUM contract is too low");
+      await expect(dataDex.connect(addr1).buyDataNFT(owner.address, addr1.address, 1, 0)).to.be.revertedWith("Either you have insufficient ITHEUM to proceed or allowance in ITHEUM contract is too low");
     });
 
     it("should revert when from address is not the owner of the provided token id", async function () {

@@ -136,7 +136,7 @@ contract DataDex is Initializable, OwnableUpgradeable, PausableUpgradeable {
         (uint256 sellerFee, uint256 buyerFee) = getSellerAndBuyerFee(priceInItheum);
 
         require(balanceAndAllowanceCheck(msg.sender, priceInItheum + royaltyInItheum + buyerFee),
-            "Either you  have insufficient ITHEUM to proceed or allowance in ITHEUM contract is too low");
+            "Either you have insufficient ITHEUM to proceed or allowance in ITHEUM contract is too low");
 
         // transfer $ITHEUM to data nft fee treasury, to owner and to creator
         itheumToken.transferFrom(msg.sender, dataNFTFeeTreasury, sellerFee + buyerFee);
