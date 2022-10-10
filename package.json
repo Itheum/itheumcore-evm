@@ -1,6 +1,6 @@
 {
   "name": "itheumcore",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
@@ -9,7 +9,7 @@
     "dotenv": "^10.0.0",
     "ethereum-waffle": "^3.4.0",
     "ethers": "^5.4.4",
-    "hardhat": "^2.6.0",
+    "hardhat": "^2.11.2",
     "hardhat-watcher": "^2.1.1",
     "lerna": "^4.0.0"
   },

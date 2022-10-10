@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "hardhat/console.sol";
 
-contract ItheumDataCoalitionsDAO {
+contract DataCoalitionsDAO {
 
     // get auto incremented IDs
     using Counters for Counters.Counter;
