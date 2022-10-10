@@ -1,6 +1,6 @@
 const { expect } = require("chai");
 
-describe("ItheumDataCoalitionsDAO", function () {
+describe("DataCoalitionsDAO", function () {
   beforeEach(async() => {
     ItheumTokenitheumToken = await ethers.getContractFactory("ItheumToken");
     itheumToken = await ItheumToken.deploy();
@@ -8,8 +8,8 @@ describe("ItheumDataCoalitionsDAO", function () {
 
     await itheumToken.deployed();
 
-    ItheumDataCoalitionsDAO = await ethers.getContractFactory("ItheumDataCoalitionsDAO");
-    dataCoalitionsDAO = await ItheumDataCoalitionsDAO.deploy(itheumToken.address);
+    DataCoalitionsDAO = await ethers.getContractFactory("DataCoalitionsDAO");
+    dataCoalitionsDAO = await DataCoalitionsDAO.deploy(itheumToken.address);
 
     await dataCoalitionsDAO.deployed();
   })
@@ -229,8 +229,8 @@ function getItheumInPrecision(readableItheum) {
 
     // expect(true).to.equal(true);
 
-    // const ItheumDataCoalitionsDAO = await ethers.getContractFactory("ItheumDataCoalitionsDAO");
-    // const dataCoalitionsDAO = await ItheumDataCoalitionsDAO.deploy(itheumToken.address);
+    // const DataCoalitionsDAO = await ethers.getContractFactory("DataCoalitionsDAO");
+    // const dataCoalitionsDAO = await DataCoalitionsDAO.deploy(itheumToken.address);
 
     // console.log('ownerDCDao');
     // console.log(dataCoalitionsDAO.address);

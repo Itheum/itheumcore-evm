@@ -40,6 +40,12 @@ module.exports = {
   },
   solidity: "0.8.4",
   networks: {
+    eth_goerli_testnet: {
+      url: process.env.ETH_GOERLI_TESTNET_URL ?? "",
+      chainId: 5,
+      gasPrice: 20000000000,
+      accounts: process.env.ETH_GOERLI_TESTNET_KEY ? [`0x${process.env.ETH_GOERLI_TESTNET_KEY}`] : [],
+    },
     eth_rop_testnet: {
       url: process.env.ETH_ROP_TESTNET_URL ?? "",
       chainId: 3,
