@@ -43,7 +43,7 @@ module.exports = {
     eth_goerli_testnet: {
       url: process.env.ETH_GOERLI_TESTNET_URL ?? "",
       chainId: 5,
-      gasPrice: 20000000000,
+      gasPrice: 05000000000,
       accounts: process.env.ETH_GOERLI_TESTNET_KEY ? [`0x${process.env.ETH_GOERLI_TESTNET_KEY}`] : [],
     },
     eth_rop_testnet: {
