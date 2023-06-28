@@ -28,7 +28,7 @@ Contracts dev is via hardhat. Some useful commands:
 - `npx hardhat compile`: Compiles all contracts in folder (note that sometimes you may get *Nothing to compile* even though you added/changed contracts. In this case, run `npx hardhat clean` before calling compile)
 - `npx hardhat test`: runs unit tests or use `npx hardhat watch test` to run in test watch mode
 - `npx hardhat watch tdd` to run in TDD watch mode (updating contracts and saving will compile all and run tests)
-- `npx hardhat test --grep DataNFTV01` to run specific test files and cases for quick testing of dev
+- `npx hardhat test --grep DATANFTFT1` to run specific test files and cases for quick testing of dev
 
 #### Adding hardhat local chain to metamask
 - basically after running the `npx hardhat node` you need to do this (https://www.youtube.com/watch?v=FTDEX3S1eqU) to add it to metamask and add local chain addresses to metamask
@@ -42,9 +42,9 @@ Contracts dev is via hardhat. Some useful commands:
 ### Deploying into testnet
 - Compile all contracts in folder via `npx hardhat compile`
 - deploy via `npx hardhat run scripts/itheumcore-script.js --network {testnet_code}`
-- The following `{testnet_code}`s are currently supported: `eth_goerli_testnet` `pol_mum_testnet` `bsc_testnet` `avalanche_testnet` `harmony_testnet` `platon_testnet`, `parastate_testnet`
+- The following `{testnet_code}`s are currently supported: `eth_goerli_testnet` `pol_mum_testnet` `bsc_testnet` `avalanche_testnet` `harmony_testnet` `platon_testnet`, `parastate_testnet`, `astar_shibuya_testnet`
 
-### Local environemnt dev requirements
+### Local environment dev requirements
 - If you are `Deploying into testnet`, it needs some ENV vars. You need to create a `.env` file and add the ENV vars are used in the `hardhat.config.js` file.
 - Each chain's private key will be in `[XXX]_TESTNET_KEY`, it's best practice to use a single dev usage wallet across chains. So create a `dedicated wallet` then use it across all chains (ask the core devs if there us a shared testnet wallet you can use).
 - Before you deploy your contracts into a chain, you need to make sure that the wallet used has funds in it for gas costs. In testnets, you can use the chain faucets to feed that wallet.
@@ -67,10 +67,10 @@ When deploying to Parastate (which is a substrate based EVM chain), the address 
 {code: 1012, message: "Transaction is temporarily banned"}
 ```
 
-[This issue](https://stackoverflow.com/a/57313346) menions something about a temp ban based enfored on a previous tx issue. Not sure if it was related to the failed no-gas tx.
+[This issue](https://stackoverflow.com/a/57313346) mentions something about a temp ban based enforced on a previous tx issue. Not sure if it was related to the failed no-gas tx.
 
 Only way to fix this was to move to another fresh account with STATE ans try and worked fine.
 
 - **Avalanche deployment error**
 
-We got an error trying to deply to the Avalanche C-Chain and this was because it had a min gas price requirement of 25000000000. This setting was updated in the hardhat config and after this it was good.
+We got an error trying to deploy to the Avalanche C-Chain and this was because it had a min gas price requirement of 25000000000. This setting was updated in the hardhat config and after this it was good.

@@ -1,8 +1,8 @@
 const { expect } = require("chai");
 
-describe("DataNFTV01", async function () {
+describe("DATANFTFT1", async function () {
   beforeEach(async() => {
-    DataNFT = await ethers.getContractFactory("DataNFTV01");
+    DataNFT = await ethers.getContractFactory("DATANFTFT1");
     dataNFT = await DataNFT.deploy();
     dataNFTAddress = (await dataNFT.deployed()).address;
   });

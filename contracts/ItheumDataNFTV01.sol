@@ -4,11 +4,11 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract DataNFTV01 is ERC721 {
+contract DATANFTFT1 is ERC721 {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
     
-    constructor() ERC721("Itheum Data NFT V0.1", "mDAFT") {}
+    constructor() ERC721("Itheum Data NFT-FT V1", "DATANFTFT1") {}
     
     struct DataNFT {
         uint256 id;
