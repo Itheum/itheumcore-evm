@@ -27,7 +27,7 @@ async function main() {
 
   console.log("DataDEX deployed to:", dataDEX.address);
 
-  const DataNFTToken = await hre.ethers.getContractFactory("DataNFTV01"); // change to DataNFTV01 for older version 
+  const DataNFTToken = await hre.ethers.getContractFactory("DATANFTFT1"); // change to DATANFTFT1 for older version 
   const dataNFTToken = await DataNFTToken.deploy();
 
   await dataNFTToken.deployed();

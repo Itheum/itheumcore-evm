@@ -94,5 +94,10 @@ module.exports = {
       gasPrice: 25000000000,
       accounts: process.env.AVALANCHE_TESTNET_KEY ? [`0x${process.env.AVALANCHE_TESTNET_KEY}`] : [],
     },
+    astar_shibuya_testnet: {
+      url: process.env.ASTAR_SHIBUYA_TESTNET_URL ?? "",
+      chainId: 81,
+      accounts: process.env.ASTAR_SHIBUYA_TESTNET_KEY ? [ process.env.ASTAR_SHIBUYA_TESTNET_KEY ] : [],
+    }
   }
 };
